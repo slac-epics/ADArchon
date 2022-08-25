@@ -1,0 +1,19 @@
+bin
+lib
+include
+db
+dbd
+*_BAK.adl
+documentation.html
+envPaths*
+cdCommands
+dllPath.bat
+auto_settings.sav*
+configure/*.local
+O.*/
+*~
+*.swp
+*.dll
+# SLAC changes
+RELEASE_SITE
+autosave
