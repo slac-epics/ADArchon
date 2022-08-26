@@ -10,6 +10,7 @@ include $(TOP)/configure/CONFIG
 MODELS = $(wildcard ../*.env)
 DB_INSTALLS += $(MODELS)
 DB_INSTALLS += $(subst .env,.template,$(MODELS))
+DB_INSTALLS += $(subst .env,.acf,$(MODELS))
 
 #----------------------------------------------------
 # If <anyname>.db template is not named <anyname>*.template add
