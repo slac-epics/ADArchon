@@ -1,0 +1,13 @@
+include "ADBase.template"
+include "NDFile.template"
+
+#Records in ADBase that do not apply to Andor
+
+record(mbbo, "$(P)$(R)ColorMode")
+{
+    field(DISA, "1")
+}
+record(mbbi, "$(P)$(R)ColorMode_RBV")
+{
+    field(DISA, "1")
+}
