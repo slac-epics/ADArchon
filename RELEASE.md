@@ -1,4 +1,4 @@
-ADAndor Releases
+ADArchon Releases
 ==================
 
 The latest untagged master branch can be obtained at
