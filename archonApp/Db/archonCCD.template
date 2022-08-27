@@ -1,7 +1,7 @@
 include "ADBase.template"
 include "NDFile.template"
 
-#Records in ADBase that do not apply to Andor
+#Records in ADBase that do not apply to Archon
 
 record(mbbo, "$(P)$(R)ColorMode")
 {

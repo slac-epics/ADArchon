@@ -13,10 +13,10 @@ include $(TOP)/configure/CONFIG
 INC += archon.h
 
 ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
-LIB_INSTALLS_WIN32    += ../os/win32-x86/andor.lib
+LIB_INSTALLS_WIN32    += ../os/win32-x86/archon.lib
 
 else ifeq (windows-x64, $(findstring windows-x64, $(T_A)))
-LIB_INSTALLS_WIN32    += ../os/windows-x64/andor.lib
+LIB_INSTALLS_WIN32    += ../os/windows-x64/archon.lib
 
 else ifeq (linux-x86_64, $(findstring linux-x86_64, $(T_A)))
 LIB_INSTALLS_Linux += ../os/linux-x86_64/libarchon.so
