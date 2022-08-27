@@ -8,6 +8,8 @@
 #ifndef ARCHONCCD_H
 #define ARCHONCCD_H
 
+#include "ADDriver.h"
+
 /**
  * Forward declare the Driver class from the LCLS-I DAQ library.
  */
