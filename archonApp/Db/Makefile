@@ -12,6 +12,7 @@ include $(TOP)/configure/CONFIG
 # databases, templates, substitutions like this
 
 DB += archonCCD.template
+DB += archonXmitDelay.template
 
 REQ += archonCCD_settings.req
 
