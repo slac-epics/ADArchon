@@ -1,6 +1,366 @@
 include "ADBase.template"
 include "NDFile.template"
 
+# These are the records that we modify from NDFile.template
+record(mbbo, "$(P)$(R)DataType")
+{
+   field(PINI, "YES")
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))DATA_TYPE")
+   field(ZRST, "UInt16")
+   field(ZRVL, "3")
+   field(ONST, "UInt32")
+   field(ONVL, "5")
+   field(TWST, "")
+   field(TWVL, "")
+   field(THST, "")
+   field(THVL, "")
+   field(FRST, "")
+   field(FRVL, "")
+   field(FVST, "")
+   field(FVVL, "")
+   field(SXST, "")
+   field(SXVL, "")
+   field(SVST, "")
+   field(SVVL, "")
+}
+
+record(mbbi, "$(P)$(R)DataType_RBV")
+{
+   field(ZRST, "UInt16")
+   field(ZRVL, "3")
+   field(ONST, "UInt32")
+   field(ONVL, "5")
+   field(TWST, "")
+   field(TWVL, "")
+   field(THST, "")
+   field(THVL, "")
+   field(FRST, "")
+   field(FRVL, "")
+   field(FVST, "")
+   field(FVVL, "")
+   field(SXST, "")
+   field(SXVL, "")
+   field(SVST, "")
+   field(SVVL, "")
+}
+
+# These are records specific to the archon detector
+
+# Blackplane info readback
+record(mbbi, "$(P)$(R)ArchonBackplaneType_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BACKPLANE_TYPE")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(R)ArchonBackplaneRev_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BACKPLANE_REV")
+    field(SCAN, "I/O Intr")
+}
+
+record(bo, "$(P)$(R)ArchonPowerMode")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_POWER_SWITCH")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    info( autosaveFields, "VAL" )
+}
+
+record(bi, "$(P)$(R)ArchonPowerMode_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_POWER_MODE")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(SCAN, "I/O Intr")
+}
+
+record(mbbo, "$(P)$(R)ArchonReadOutMode")
+{
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_READOUT_MODE")
+    info( autosaveFields, "VAL" )
+}
+
+record(mbbi, "$(P)$(R)ArchonReadOutMode_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_READOUT_MODE")
+    field(SCAN, "I/O Intr")
+}
+
+# number of frames to batch into a single readout
+record(longout, "$(P)$(R)ArchonNumBatchFrames")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_NUM_BATCH_FRAMES")
+    field(VAL,  "0")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)ArchonNumBatchFrames_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_NUM_BATCH_FRAMES")
+    field(SCAN, "I/O Intr")
+}
+
+# linescan mode toggle
+record(bo, "$(P)$(R)ArchonLineScanMode")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_LINESCAN_MODE")
+    field(ZNAM, "Disable")
+    field(ONAM, "Enable")
+    info( autosaveFields, "VAL" )
+}
+
+record(bi, "$(P)$(R)ArchonLineScanMode_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_LINESCAN_MODE")
+    field(ZNAM, "Disable")
+    field(ONAM, "Enable")
+    field(SCAN, "I/O Intr")
+}
+
+# number of lines to clear when before acquiring a frame
+record(longout, "$(P)$(R)ArchonPreFrameClear")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_PREFRAME_CLEAR")
+    field(VAL,  "0")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)ArchonPreFrameClear_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_PREFRAME_CLEAR")
+    field(SCAN, "I/O Intr")
+}
+
+# number of lines to clear at once when not acquiring frames
+record(longout, "$(P)$(R)ArchonIdleClear")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_IDLE_CLEAR")
+    field(VAL,  "1")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)ArchonIdleClear_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_IDLE_CLEAR")
+    field(SCAN, "I/O Intr")
+}
+
+# number of lines to skip when starting to acquire a frame
+record(longout, "$(P)$(R)ArchonPreFrameSkip")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_PREFRAME_SKIP")
+    field(VAL,  "22")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)ArchonPreFrameSkip_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_PREFRAME_SKIP")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)ArchonNonIntTime")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_NONINT_TIME")
+    field(PREC, "3")
+    field(VAL,  "0.01")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)ArchonNonIntTime_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_NONINT_TIME")
+    field(PREC, "3")
+    field(SCAN, "I/O Intr")
+}
+
+# clock parameters
+record(longout, "$(P)$(R)ArchonClockAT")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_CLOCK_AT")
+    field(VAL,  "2000")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)ArchonClockAT_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_CLOCK_AT")
+    field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)$(R)ArchonClockST")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_CLOCK_ST")
+    field(VAL,  "30")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)ArchonClockST_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_CLOCK_ST")
+    field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)$(R)ArchonClockSTM1")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_CLOCK_STM1")
+    field(VAL,  "29")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)ArchonClockSTM1_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_CLOCK_STM1")
+    field(SCAN, "I/O Intr")
+}
+
+# The bias channel to use
+record(mbbo, "$(P)$(R)ArchonBiasChan")
+{
+    field(PINI, "YES")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_CHAN")
+    info( autosaveFields, "VAL" )
+}
+
+record(mbbi, "$(P)$(R)ArchonBiasChan_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_CHAN")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)ArchonBiasSetpoint")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SETPOINT")
+    field(PREC, "1")
+    field(VAL,  "-40.0")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)ArchonBiasSetpoint_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SETPOINT")
+    field(PREC, "1")
+    field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)ArchonBiasVoltage_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_VOLTAGE")
+    field(PREC, "3")
+    field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)ArchonBiasCurrent_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_CURRENT")
+    field(PREC, "3")
+    field(SCAN, "I/O Intr")
+}
+
+# tapline info
+record(longin, "$(P)$(R)ArchonTotalTaplines_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_TOTAL_TAPLINES")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(R)ArchonActiveTaplines_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_ACTIVE_TAPLINES")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(R)ArchonPixelsPerTap_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_PIXELS_PER_TAP")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)ArchonFramePollPeriod")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_FRAME_POLL_PERIOD")
+    field(PREC, "6")
+    field(VAL,  "0.001")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)ArchonFramePollPeriod_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_FRAME_POLL_PERIOD")
+    field(PREC, "6")
+    field(SCAN, "I/O Intr")
+}
+
+# Status message not related to data acquisition (error messages, information messages, etc.)
+record(waveform, "$(P)$(R)ArchonMessage_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MESSAGE")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
+# Name of the acf configuration file that defines the hardware / data acquistion program of the camera
+record(waveform, "$(P)$(R)ArchonConfigFile_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_CONFIG_FILE")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
 #Records in ADBase that do not apply to Archon
 
 record(mbbo, "$(P)$(R)ColorMode")
