@@ -85,12 +85,13 @@ namespace Pds {
         uint32_t type() const;
         uint32_t rev() const;
         std::string version() const;
-        uint16_t id() const;
+        std::string id() const;
+        std::string power_id() const;
         uint16_t present() const;
         uint32_t module_type(unsigned mod) const;
         uint32_t module_rev(unsigned mod) const;
         std::string module_version(unsigned mod) const;
-        uint16_t module_id(unsigned mod) const;
+        std::string module_id(unsigned mod) const;
         bool module_present(unsigned mod) const;
         bool update(char* buffer);
       protected:
@@ -216,7 +217,7 @@ namespace Pds {
         const char* rd_config_line(unsigned num);
         const char* command_output(const char* cmd, char delim='\n');
         const char* message() const;
-        AcqMode acquisition_mode() const;
+        AcqMode acquisition_mode();
         const System& system() const;
         const Status& status() const;
         const BufferInfo& buffer_info() const;
@@ -241,6 +242,7 @@ namespace Pds {
         char*         _readbuf;
         char*         _writebuf;
         char*         _message;
+        uint32_t      _end_frame;
         uint32_t      _last_frame;
         timespec      _sleep_time;
         System        _system;

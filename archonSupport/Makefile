@@ -11,6 +11,7 @@ include $(TOP)/configure/CONFIG
 # The extension on archon.hh was changed from .hh to .h because the EPICS build system does
 # not recognize .hh
 INC += archon.h
+INC += archonVersion.h
 
 ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
 LIB_INSTALLS_WIN32    += ../os/win32-x86/archon.lib
