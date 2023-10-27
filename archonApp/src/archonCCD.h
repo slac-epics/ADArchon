@@ -12,31 +12,32 @@
 
 #include <alarm.h>
 
-#define ArchonMessageString         "ARCHON_MESSAGE"
-#define ArchonBackplaneTypeString   "ARCHON_BACKPLANE_TYPE"
-#define ArchonBackplaneRevString    "ARCHON_BACKPLANE_REV"
-#define ArchonPowerModeString       "ARCHON_POWER_MODE"
-#define ArchonPowerSwitchString     "ARCHON_POWER_SWITCH"
-#define ArchonReadOutModeString     "ARCHON_READOUT_MODE"
-#define ArchonNumBatchFramesString  "ARCHON_NUM_BATCH_FRAMES"
-#define ArchonLineScanModeString    "ARCHON_LINESCAN_MODE"
-#define ArchonPreFrameClearString   "ARCHON_PREFRAME_CLEAR"
-#define ArchonIdleClearString       "ARCHON_IDLE_CLEAR"
-#define ArchonPreFrameSkipString    "ARCHON_PREFRAME_SKIP"
-#define ArchonNonIntTimeString      "ARCHON_NONINT_TIME"
-#define ArchonClockAtString         "ARCHON_CLOCK_AT"
-#define ArchonClockStString         "ARCHON_CLOCK_ST"
-#define ArchonClockStm1String       "ARCHON_CLOCK_STM1"
-#define ArchonBiasChanString        "ARCHON_BIAS_CHAN"
-#define ArchonBiasSetpointString    "ARCHON_BIAS_SETPOINT"
-#define ArchonBiasSwitchString      "ARCHON_BIAS_SWITCH"
-#define ArchonBiasVoltageString     "ARCHON_BIAS_VOLTAGE"
-#define ArchonBiasCurrentString     "ARCHON_BIAS_CURRENT"
-#define ArchonFramePollPeriodString "ARCHON_FRAME_POLL_PERIOD"
-#define ArchonTotalTaplinesString   "ARCHON_TOTAL_TAPLINES"
-#define ArchonActiveTaplinesString  "ARCHON_ACTIVE_TAPLINES"
-#define ArchonPixelsPerTapString    "ARCHON_PIXELS_PER_TAP"
-#define ArchonConfigFileString      "ARCHON_CONFIG_FILE"
+#define ArchonMessageString           "ARCHON_MESSAGE"
+#define ArchonPwrStatusMessageString  "ARCHON_PWR_STAT"
+#define ArchonBackplaneTypeString     "ARCHON_BACKPLANE_TYPE"
+#define ArchonBackplaneRevString      "ARCHON_BACKPLANE_REV"
+#define ArchonPowerModeString         "ARCHON_POWER_MODE"
+#define ArchonPowerSwitchString       "ARCHON_POWER_SWITCH"
+#define ArchonReadOutModeString       "ARCHON_READOUT_MODE"
+#define ArchonNumBatchFramesString    "ARCHON_NUM_BATCH_FRAMES"
+#define ArchonLineScanModeString      "ARCHON_LINESCAN_MODE"
+#define ArchonPreFrameClearString     "ARCHON_PREFRAME_CLEAR"
+#define ArchonIdleClearString         "ARCHON_IDLE_CLEAR"
+#define ArchonPreFrameSkipString      "ARCHON_PREFRAME_SKIP"
+#define ArchonNonIntTimeString        "ARCHON_NONINT_TIME"
+#define ArchonClockAtString           "ARCHON_CLOCK_AT"
+#define ArchonClockStString           "ARCHON_CLOCK_ST"
+#define ArchonClockStm1String         "ARCHON_CLOCK_STM1"
+#define ArchonBiasChanString          "ARCHON_BIAS_CHAN"
+#define ArchonBiasSetpointString      "ARCHON_BIAS_SETPOINT"
+#define ArchonBiasSwitchString        "ARCHON_BIAS_SWITCH"
+#define ArchonBiasVoltageString       "ARCHON_BIAS_VOLTAGE"
+#define ArchonBiasCurrentString       "ARCHON_BIAS_CURRENT"
+#define ArchonFramePollPeriodString   "ARCHON_FRAME_POLL_PERIOD"
+#define ArchonTotalTaplinesString     "ARCHON_TOTAL_TAPLINES"
+#define ArchonActiveTaplinesString    "ARCHON_ACTIVE_TAPLINES"
+#define ArchonPixelsPerTapString      "ARCHON_PIXELS_PER_TAP"
+#define ArchonConfigFileString        "ARCHON_CONFIG_FILE"
 
 /**
  * Forward declare the Driver class from the LCLS-I DAQ library.
@@ -89,6 +90,7 @@ class ArchonCCD : public ADDriver {
 
     // parameters
     int ArchonMessage;
+    int ArchonPwrStatusMessage;
     int ArchonBackplaneType;
     int ArchonBackplaneRev;
     int ArchonPowerMode;
@@ -120,6 +122,7 @@ class ArchonCCD : public ADDriver {
 
     bool checkStatus(bool status, const char *message);
     asynStatus setupAcquisition(bool commit=false);
+    asynStatus setupPowerAndBias();
     asynStatus setupFramePoll(double period);
     bool waitFrame(void *frameBuffer, Pds::Archon::FrameMetaData *frameMeta);
     //void saveDataFrame(int frameNumber);

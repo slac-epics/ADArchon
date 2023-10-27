@@ -188,6 +188,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   epicsAtExit(exitHandler, this);
 
   createParam(ArchonMessageString,          asynParamOctet,   &ArchonMessage);
+  createParam(ArchonPwrStatusMessageString, asynParamOctet,   &ArchonPwrStatusMessage);
   createParam(ArchonBackplaneTypeString,    asynParamInt32,   &ArchonBackplaneType);
   createParam(ArchonBackplaneRevString,     asynParamInt32,   &ArchonBackplaneRev);
   createParam(ArchonPowerModeString,        asynParamInt32,   &ArchonPowerMode);
@@ -500,6 +501,7 @@ asynStatus ArchonCCD::readEnum(asynUser *pasynUser, char *strings[], int values[
 asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
   int function = pasynUser->reason;
+  bool signalDataTask = false;
   int adstatus = 0;
   epicsInt32 oldValue;
 
@@ -516,6 +518,7 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
       // Start the acqusition here, then send an event to the dataTask at the end of this function
       try {
         // Set up acquisition
+        signalDataTask = true;
         mAcquiringData = 1;
         status = setupAcquisition(true);
         if (status != asynSuccess) throw std::string("Setup acquisition failed");
@@ -563,7 +566,6 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
                   driverName, functionName);
         checkStatus(mDrv->clear_acquisition(), "clear_acquisition failed");
         mAcquiringData = 0;
-        mStopping = false;
         mDrv->timeout_waits(false);
         mDrvMutex->unlock();
       } catch (const std::string &e) {
@@ -574,20 +576,23 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
       }
     }
   }
-  else if ((function == ADNumExposures)     || (function == ADNumImages)            ||
-           (function == ADImageMode)                                                ||
-           (function == ADBinX)             || (function == ADBinY)                 ||
-           (function == ADMinX)             || (function == ADMinY)                 ||
-           (function == ADSizeX)            || (function == ADSizeY)                ||
-           (function == ADReverseX)         || (function == ADReverseY)             ||
-           (function == ADTriggerMode)      || (function == ArchonPowerSwitch)      ||
-           (function == ArchonReadOutMode)  || (function == ArchonNumBatchFrames)   ||
-           (function == ArchonLineScanMode) || (function == ArchonPreFrameClear)    ||
-           (function == ArchonIdleClear)    || (function == ArchonPreFrameSkip)     ||
-           (function == ArchonClockAt)      || (function == ArchonClockSt)          ||
-           (function == ArchonClockStm1)    || (function == ArchonBiasChan)         ||
-           (function == ArchonBiasSwitch)) {
+  else if ((function == ADNumExposures)       || (function == ADNumImages)        ||
+           (function == ADImageMode)                                              ||
+           (function == ADBinX)               || (function == ADBinY)             ||
+           (function == ADMinX)               || (function == ADMinY)             ||
+           (function == ADSizeX)              || (function == ADSizeY)            ||
+           (function == ADReverseX)           || (function == ADReverseY)         ||
+           (function == ADTriggerMode)        || (function == ArchonReadOutMode)  ||
+           (function == ArchonNumBatchFrames) || (function == ArchonLineScanMode) ||
+           (function == ArchonPreFrameClear)  || (function == ArchonIdleClear)    ||
+           (function == ArchonPreFrameSkip)   || (function == ArchonClockAt)      ||
+           (function == ArchonClockSt)        || (function == ArchonClockStm1)) {
     status = setupAcquisition();
+    if (status != asynSuccess) setIntegerParam(function, oldValue);
+  }
+  else if ((function == ArchonPowerSwitch)  || (function == ArchonBiasChan) ||
+           (function == ArchonBiasSwitch)) {
+    status = setupPowerAndBias();
     if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
   else if (function == ADShutterControl) {
@@ -603,7 +608,7 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
   /* Send a signal to the poller task which will make it do a poll, and switch to the fast poll rate */
   epicsEventSignal(statusEvent);
 
-  if (mAcquiringData) {
+  if (signalDataTask) {
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
         "%s:%s:, Sending dataEvent to dataTask ...\n",
         driverName, functionName);
@@ -647,20 +652,25 @@ asynStatus ArchonCCD::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
   if (function == ADAcquireTime) {
     mAcquireTime = archonTimeConvert(value);
     status = setupAcquisition();
+    if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
   else if (function == ADAcquirePeriod) {
     mAcquirePeriod = archonTimeConvert(value);
     status = setupAcquisition();
+    if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
   else if (function == ArchonNonIntTime) {
     mNonIntTime = archonTimeConvert(value);
     status = setupAcquisition();
+    if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
   else if (function == ArchonBiasSetpoint) {
-    status = setupAcquisition();
+    status = setupPowerAndBias();
+    if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
   else if (function == ArchonFramePollPeriod) {
     status = setupFramePoll(value);
+    if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
   else {
     status = ADDriver::writeFloat64(pasynUser, value);
@@ -815,15 +825,99 @@ void ArchonCCD::statusTask(void)
   mExited++;
 }
 
+asynStatus ArchonCCD::setupPowerAndBias()
+{
+  int powerSwitch;
+  int biasChan;
+  int biasSwitch;
+  double biasSetpoint;
+  Pds::Archon::PowerMode powerMode;
+  static const char *functionName = "setupPowerAndBias";
+
+  if (!mInitOK) {
+    return asynDisabled;
+  }
+
+  if (mAcquiringData) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: Unable to set power and bias while acquiring\n",
+              driverName, functionName);
+    setStringParam(ArchonPwrStatusMessage, "Cannot set power/bias while acquiring");
+    return asynError;
+  }
+
+  getIntegerParam(ArchonPowerSwitch, &powerSwitch);
+
+  getIntegerParam(ArchonBiasChan, &biasChan);
+  getIntegerParam(ArchonBiasSwitch, &biasSwitch);
+  getDoubleParam (ArchonBiasSetpoint, &biasSetpoint);
+
+  try {
+    // only setup the bias if it has changed since this is slow and requires power cycle
+    if ((biasChan != mBiasChannelCache) ||
+        (biasSwitch != mBiasCache) ||
+        (fabs(biasSetpoint - mBiasSetpointCache) > 0.05)) {
+      // need to power off to apply bias settings
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s:, power_off()\n",
+                driverName, functionName);
+      checkStatus(mDrv->power_off(), "Unable to power off ccd");
+
+      // Set the detector bias
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s:, set_bias(%s, %s, %f)\n",
+                driverName, functionName,
+                BiasChannelEnums[biasChan].name.c_str(),
+                biasSwitch ?  "true" : "false",
+                biasSetpoint);
+      checkStatus(mDrv->set_bias(biasChan, biasSwitch, biasSetpoint), "Unable to set bias settings");
+      mBiasCache = biasSwitch;
+      mBiasChannelCache = biasChan;
+      mBiasSetpointCache = biasSetpoint;
+
+      // make sure power is really off before possibly turning it back on
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s:, wait_power_mode(Pds::Archon::Off, 5000)\n",
+                driverName, functionName);
+      checkStatus(mDrv->wait_power_mode(Pds::Archon::Off, 5000), "Failed to power off after 5 sec");
+    }
+
+    // update current power status from detector
+    checkStatus(mDrv->fetch_status(), "Unable to fetch status info");
+    powerMode = mDrv->status().power();
+
+    if (powerSwitch && powerMode < Pds::Archon::Intermediate) {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s:, power_on()\n",
+                driverName, functionName);
+      checkStatus(mDrv->power_on(), "Unable to power on ccd");
+    } else if (!powerSwitch && powerMode > Pds::Archon::Intermediate) {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s:, power_off()\n",
+                driverName, functionName);
+      checkStatus(mDrv->power_off(), "Unable to power off ccd");
+    }
+
+    /* For a successful setup, clear the error message. */
+    setStringParam(ArchonPwrStatusMessage, " ");
+  } catch (const std::string &e) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: %s\n",
+              driverName, functionName, e.c_str());
+    setStringParam(ArchonPwrStatusMessage, e.c_str());
+    return asynError;
+  }
+
+  return asynSuccess;
+}
 asynStatus ArchonCCD::setupAcquisition(bool commit)
 {
   int numExposures;
   int numImages;
   int imageMode;
   int triggerMode;
-  int powerSwitch;
-  int powerMode;
   int readOutMode;
+  int lineScanMode;
   int numBatchFrames;
   int preframeClear;
   int idleClear;
@@ -831,14 +925,10 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
   int clockAt;
   int clockSt;
   int clockStm1;
-  int biasChan;
-  int biasSwitch;
   int binX, binY, minX, minY, sizeX, sizeY, reverseX, reverseY, maxSizeX, maxSizeY;
   unsigned sampleMode;
-  unsigned lineScanMode;
   unsigned frameSize;
   unsigned bitsPerPixel;
-  double biasSetpoint;
   static const char *functionName = "setupAcquisition";
 
   if (!mInitOK) {
@@ -900,16 +990,14 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
     setIntegerParam(ADSizeY, sizeY);
   }
 
-  if (!commit) {
-    return asynSuccess;
-  }
-
   getIntegerParam(ADTriggerMode, &triggerMode);
 
-  getIntegerParam(ArchonPowerMode, &powerMode);
-  getIntegerParam(ArchonPowerSwitch, &powerSwitch);
-
   getIntegerParam(ArchonNumBatchFrames, &numBatchFrames);
+  if (numBatchFrames <= 0) {
+    numBatchFrames = 1;
+    setIntegerParam(ArchonNumBatchFrames, numBatchFrames);
+  }
+  getIntegerParam(ArchonLineScanMode, &lineScanMode);
   getIntegerParam(ArchonPreFrameClear, &preframeClear);
   getIntegerParam(ArchonIdleClear, &idleClear);
   getIntegerParam(ArchonPreFrameSkip, &preframeSkip);
@@ -917,45 +1005,11 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
   getIntegerParam(ArchonClockSt, &clockSt);
   getIntegerParam(ArchonClockStm1, &clockStm1);
 
-  getIntegerParam(ArchonBiasChan, &biasChan);
-  getIntegerParam(ArchonBiasSwitch, &biasSwitch);
-  getDoubleParam (ArchonBiasSetpoint, &biasSetpoint);
+  if (!commit) {
+    return asynSuccess;
+  }
 
   try {
-    // only setup the bias if it has changed since this is slow and requires power cycle
-    if ((biasChan != mBiasChannelCache) ||
-        (biasSwitch != mBiasCache) ||
-        (fabs(biasSetpoint - mBiasSetpointCache) > 0.05)) {
-      // need to power off to apply bias settings
-      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s:, power_off()\n",
-                driverName, functionName);
-      checkStatus(mDrv->power_off(), "Unable to power off ccd");
-      powerMode = Pds::Archon::Off;
-
-      // Set the detector bias
-      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s:, set_bias(%s, %s, %f)\n",
-                driverName, functionName,
-                BiasChannelEnums[biasChan].name.c_str(),
-                biasSwitch ?  "true" : "false",
-                biasSetpoint);
-      checkStatus(mDrv->set_bias(biasChan, biasSwitch, biasSetpoint), "Unable to set bias settings");
-      mBiasCache = biasSwitch;
-      mBiasChannelCache = biasChan;
-      mBiasSetpointCache = biasSetpoint;
-    }
-    if (powerSwitch && powerMode < Pds::Archon::Intermediate) {
-      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s:, power_on()\n",
-                driverName, functionName);
-      checkStatus(mDrv->power_on(), "Unable to power on ccd");
-    } else if (!powerSwitch && powerMode > Pds::Archon::Intermediate) {
-      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s:, power_off()\n",
-                driverName, functionName);
-      checkStatus(mDrv->power_off(), "Unable to power off ccd");
-    }
     // Set the binning parameters and number of vertical lines
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
               "%s:%s:, set_vertical_binning(%d)\n",
@@ -967,8 +1021,8 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
     checkStatus(mDrv->set_horizontal_binning(binX), "unable to set horizontal binning");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
               "%s:%s:, set_number_of_lines(%d, %d)\n",
-              driverName, functionName, sizeY/binY, numBatchFrames);
-    checkStatus(mDrv->set_number_of_lines(sizeY/binY, (unsigned) numBatchFrames),
+              driverName, functionName, sizeY/binY, lineScanMode ? numBatchFrames : 0);
+    checkStatus(mDrv->set_number_of_lines(sizeY/binY, lineScanMode ? (unsigned) numBatchFrames : 0U),
                 "unable to set number of lines");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
               "%s:%s:, set_number_of_pixels(%d)\n",
@@ -1006,7 +1060,6 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
     const Pds::Archon::Config& config = mDrv->config();
     sizeX = config.pixels_per_line();
     sizeY = config.linecount();
-    lineScanMode = config.linescan();
     sampleMode = config.samplemode();
     frameSize = config.frame_size();
     bitsPerPixel = config.bytes_per_pixel() * 8;
@@ -1021,12 +1074,11 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
     }
 
     // adjust the sizeY and framesize if  in batch mode before setting parameters
-    if (numBatchFrames > 0) {
+    if (lineScanMode) {
       sizeY /= numBatchFrames;
       frameSize /= numBatchFrames;
     }
 
-    setIntegerParam(ArchonLineScanMode, lineScanMode);
     setIntegerParam(NDArraySizeX, sizeX);
     setIntegerParam(NDArraySizeY, sizeY);
     setIntegerParam(NDDataType, sampleMode ? NDUInt32 : NDUInt16);
@@ -1149,14 +1201,13 @@ void ArchonCCD::dataTask(void)
         callParamCallbacks();
 
       } catch (const std::string &e) {
-          if (!mExiting)
-          {
-              asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
-                  "%s:%s: %s\n",
-                  driverName, functionName, e.c_str());
-              errorString = const_cast<char *>(e.c_str());
-              setStringParam(ArchonMessage, errorString);
-          }
+        if ((!mExiting) && (!mStopping)) {
+          asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+                    "%s:%s: %s\n",
+                    driverName, functionName, e.c_str());
+          errorString = const_cast<char *>(e.c_str());
+          setStringParam(ArchonMessage, errorString);
+        }
       }
     }
 
@@ -1167,6 +1218,7 @@ void ArchonCCD::dataTask(void)
 
     // Now clear main thread flag
     mAcquiringData = 0;
+    mStopping = false;
     setIntegerParam(ADAcquire, 0);
     //setIntegerParam(ADStatus, 0); //Dont set this as the status thread sets it.
 

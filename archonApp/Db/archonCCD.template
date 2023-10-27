@@ -72,12 +72,10 @@ record(bo, "$(P)$(R)ArchonPowerMode")
     info( autosaveFields, "VAL" )
 }
 
-record(bi, "$(P)$(R)ArchonPowerMode_RBV")
+record(mbbi, "$(P)$(R)ArchonPowerMode_RBV")
 {
     field(DTYP, "asynInt32")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_POWER_MODE")
-    field(ZNAM, "Off")
-    field(ONAM, "On")
     field(SCAN, "I/O Intr")
 }
 
@@ -251,6 +249,26 @@ record(longin, "$(P)$(R)ArchonClockSTM1_RBV")
     field(SCAN, "I/O Intr")
 }
 
+# bias switch toggle
+record(bo, "$(P)$(R)ArchonBiasSwitch")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SWITCH")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    info( autosaveFields, "VAL" )
+}
+
+record(bi, "$(P)$(R)ArchonBiasSwitch_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SWITCH")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(SCAN, "I/O Intr")
+}
+
 # The bias channel to use
 record(mbbo, "$(P)$(R)ArchonBiasChan")
 {
@@ -290,6 +308,7 @@ record(ai, "$(P)$(R)ArchonBiasVoltage_RBV")
     field(DTYP, "asynFloat64")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_VOLTAGE")
     field(PREC, "3")
+    field(EGU,  "V")
     field(SCAN, "I/O Intr")
 }
 
@@ -298,6 +317,7 @@ record(ai, "$(P)$(R)ArchonBiasCurrent_RBV")
     field(DTYP, "asynFloat64")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_CURRENT")
     field(PREC, "3")
+    field(EGU,  "A")
     field(SCAN, "I/O Intr")
 }
 
@@ -346,6 +366,16 @@ record(waveform, "$(P)$(R)ArchonMessage_RBV")
 {
     field(DTYP, "asynOctetRead")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MESSAGE")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
+# Status message for ccd power (error messages, information messages, etc.)
+record(waveform, "$(P)$(R)ArchonPwrStatus_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_PWR_STAT")
     field(FTVL, "CHAR")
     field(NELM, "256")
     field(SCAN, "I/O Intr")

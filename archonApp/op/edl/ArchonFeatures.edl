@@ -1542,7 +1542,7 @@ major 4
 minor 1
 release 0
 x 715
-y 355
+y 455
 w 350
 h 110
 fgColor index 14
@@ -1585,7 +1585,7 @@ major 4
 minor 1
 release 0
 x 715
-y 470
+y 570
 w 350
 h 160
 fgColor index 14
@@ -3072,7 +3072,7 @@ release 0
 x 715
 y 120
 w 350
-h 100
+h 200
 lineColor index 14
 fillColor index 14
 lineWidth 0
@@ -3094,31 +3094,6 @@ font "helvetica-medium-r-14.0"
 fontAlign "center"
 fgColor index 15
 bgColor index 12
-limitsFromDb
-nullColor index 40
-smartRefresh
-fastUpdate
-newPos
-objType "controls"
-endObjectProperties
-
-# (Text Control)
-object activeXTextDspClass
-beginObjectProperties
-major 4
-minor 7
-release 0
-x 858
-y 174
-w 60
-h 20
-controlPv "$(P)$(R)Temperature"
-format "decimal"
-font "helvetica-medium-r-12.0"
-fgColor index 25
-bgColor index 5
-editable
-motifWidget
 limitsFromDb
 nullColor index 40
 smartRefresh
@@ -3197,8 +3172,275 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 788
+x 787
 y 199
+w 60
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Bias"
+}
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 858
+y 199
+w 60
+h 20
+fgColor index 14
+bgColor index 63
+inconsistentColor index 12
+topShadowColor index 2
+botShadowColor index 12
+controlPv "$(P)$(R)ArchonBiasSwitch"
+indicatorPv "$(P)$(R)ArchonBiasSwitch"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 940
+y 200
+w 95
+h 18
+controlPv "$(P)$(R)ArchonBiasSwitch_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 737
+y 224
+w 110
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Bias Channel"
+}
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 858
+y 224
+w 60
+h 20
+fgColor index 14
+bgColor index 63
+inconsistentColor index 12
+topShadowColor index 2
+botShadowColor index 12
+controlPv "$(P)$(R)ArchonBiasChan"
+indicatorPv "$(P)$(R)ArchonBiasChan"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 940
+y 225
+w 95
+h 18
+controlPv "$(P)$(R)ArchonBiasChan_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 737
+y 249
+w 110
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Bias Setpoint"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 858
+y 249
+w 60
+h 20
+controlPv "$(P)$(R)ArchonBiasSetpoint"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 940
+y 250
+w 95
+h 18
+controlPv "$(P)$(R)ArchonBiasSetpoint_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 737
+y 274
+w 110
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Bias Readback"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 858
+y 275
+w 75
+h 18
+controlPv "$(P)$(R)ArchonBiasVoltage_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 960
+y 275
+w 75
+h 18
+controlPv "$(P)$(R)ArchonBiasCurrent_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 788
+y 299
 w 60
 h 20
 font "helvetica-medium-r-14.0"
@@ -3218,7 +3460,7 @@ major 4
 minor 7
 release 0
 x 858
-y 203
+y 303
 w 180
 h 12
 controlPv "$(P)$(R)ArchonPwrStatus_RBV"
@@ -3242,7 +3484,7 @@ major 4
 minor 4
 release 0
 x 885
-y 254
+y 354
 w 70
 h 20
 fgColor index 14
@@ -3271,7 +3513,7 @@ major 4
 minor 0
 release 0
 x 837
-y 227
+y 327
 w 107
 h 21
 
@@ -3284,7 +3526,7 @@ major 4
 minor 0
 release 0
 x 837
-y 227
+y 327
 w 106
 h 20
 lineColor index 2
@@ -3304,7 +3546,7 @@ major 4
 minor 1
 release 1
 x 870
-y 227
+y 327
 w 40
 h 20
 font "helvetica-medium-r-14.0"
@@ -3324,7 +3566,7 @@ major 4
 minor 0
 release 0
 x 715
-y 225
+y 325
 w 350
 h 60
 lineColor index 14
@@ -3339,7 +3581,7 @@ major 4
 minor 1
 release 1
 x 728
-y 254
+y 354
 w 150
 h 20
 font "helvetica-medium-r-14.0"
@@ -3359,7 +3601,7 @@ major 4
 minor 0
 release 0
 x 845
-y 292
+y 392
 w 89
 h 20
 lineColor index 2
@@ -3375,7 +3617,7 @@ major 4
 minor 1
 release 1
 x 850
-y 292
+y 392
 w 80
 h 20
 font "helvetica-medium-r-14.0"
@@ -3395,7 +3637,7 @@ major 4
 minor 0
 release 0
 x 715
-y 290
+y 390
 w 350
 h 60
 lineColor index 14
@@ -3410,7 +3652,7 @@ major 4
 minor 7
 release 0
 x 775
-y 320
+y 420
 w 280
 h 20
 controlPv "$(P)$(R)ArchonConfigFile_RBV"
@@ -3433,7 +3675,7 @@ major 4
 minor 1
 release 1
 x 725
-y 319
+y 419
 w 43
 h 20
 font "helvetica-medium-r-14.0"
