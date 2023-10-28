@@ -1,0 +1,7 @@
+# These records are specific to archon detector one per module
+record(mbbi, "$(P)$(R)MOD$(MOD):ArchonModuleType_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MODULE_TYPE_$(MOD)")
+    field(SCAN, "I/O Intr")
+}

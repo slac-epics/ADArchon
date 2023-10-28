@@ -3084,6 +3084,31 @@ beginObjectProperties
 major 4
 minor 7
 release 0
+x 858
+y 175
+w 60
+h 18
+controlPv "$(P)$(R)ArchonOverheated_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
 x 940
 y 175
 w 95

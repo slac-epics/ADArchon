@@ -16,6 +16,9 @@
 #define ArchonPwrStatusMessageString  "ARCHON_PWR_STAT"
 #define ArchonBackplaneTypeString     "ARCHON_BACKPLANE_TYPE"
 #define ArchonBackplaneRevString      "ARCHON_BACKPLANE_REV"
+#define ArchonModuleTypeString        "ARCHON_MODULE_TYPE"
+#define ArchonOverheatString          "ARCHON_OVERHEAT"
+#define ArchonPowerStatusString       "ARCHON_POWER_STATUS"
 #define ArchonPowerModeString         "ARCHON_POWER_MODE"
 #define ArchonPowerSwitchString       "ARCHON_POWER_SWITCH"
 #define ArchonReadOutModeString       "ARCHON_READOUT_MODE"
@@ -38,6 +41,8 @@
 #define ArchonActiveTaplinesString    "ARCHON_ACTIVE_TAPLINES"
 #define ArchonPixelsPerTapString      "ARCHON_PIXELS_PER_TAP"
 #define ArchonConfigFileString        "ARCHON_CONFIG_FILE"
+
+#define ArchonMaxModules 12
 
 /**
  * Forward declare the Driver class from the LCLS-I DAQ library.
@@ -82,17 +87,25 @@ class ArchonCCD : public ADDriver {
       const char *name;
     } ArchonEnumSet;
     static const ArchonEnumInfo BackplaneTypeEnums[];
+    static const ArchonEnumInfo OverheatEnums[];
+    static const ArchonEnumInfo PowerStatusEnums[];
     static const ArchonEnumInfo PowerModeEnums[];
     static const ArchonEnumInfo ReadOutModeEnums[];
     static const ArchonEnumInfo BiasChannelEnums[];
+    static const ArchonEnumInfo ModuleTypeEnums[];
     static const ArchonEnumSet ArchonEnums[];
     static const size_t ArchonEnumsSize;
+    static const ArchonEnumSet ArchonEnumsSpecial[];
+    static const size_t ArchonEnumsSpecialSize;
 
     // parameters
     int ArchonMessage;
     int ArchonPwrStatusMessage;
     int ArchonBackplaneType;
     int ArchonBackplaneRev;
+    int ArchonModuleType[ArchonMaxModules];
+    int ArchonOverheat;
+    int ArchonPowerStatus;
     int ArchonPowerMode;
     int ArchonPowerSwitch;
     int ArchonReadOutMode;
@@ -126,6 +139,12 @@ class ArchonCCD : public ADDriver {
     asynStatus setupFramePoll(double period);
     bool waitFrame(void *frameBuffer, Pds::Archon::FrameMetaData *frameMeta);
     //void saveDataFrame(int frameNumber);
+
+    /**
+     * List of boolean states (for bi/bo records)
+     */
+    static const epicsInt32 ABFalse;
+    static const epicsInt32 ABTrue;
 
     /**
      * List of controller backplane types
@@ -162,6 +181,26 @@ class ArchonCCD : public ADDriver {
     static const epicsInt32 ABPV2;
     static const epicsInt32 ABPV3;
     static const epicsInt32 ABPV4;
+
+    /**
+     * List of detector module types
+     */
+    static const epicsInt32 AMNone;
+    static const epicsInt32 AMDriver;
+    static const epicsInt32 AMAD;
+    static const epicsInt32 AMLVBias;
+    static const epicsInt32 AMHVBias;
+    static const epicsInt32 AMHeater;
+    static const epicsInt32 AMUnknown;
+    static const epicsInt32 AMHS;
+    static const epicsInt32 AMHVXBias;
+    static const epicsInt32 AMLVXBias;
+    static const epicsInt32 AMLVDS;
+    static const epicsInt32 AMHeaterX;
+    static const epicsInt32 AMXVBias;
+    static const epicsInt32 AMADF;
+    static const epicsInt32 AMADX;
+    static const epicsInt32 AMADLN;
 
     epicsEventId statusEvent;
     epicsEventId dataEvent;

@@ -37,6 +37,9 @@
 
 static const char *driverName = "archonCCD";
 
+const epicsInt32 ArchonCCD::ABFalse = 0;
+const epicsInt32 ArchonCCD::ABTrue = 1;
+
 const epicsInt32 ArchonCCD::ABNone = 0;
 const epicsInt32 ArchonCCD::ABX12 = 1;
 const epicsInt32 ArchonCCD::ABX16 = 2;
@@ -61,12 +64,39 @@ const epicsInt32 ArchonCCD::ABPV2 = 2;
 const epicsInt32 ArchonCCD::ABPV3 = 3;
 const epicsInt32 ArchonCCD::ABPV4 = 4;
 
+const epicsInt32 ArchonCCD::AMNone = 0;
+const epicsInt32 ArchonCCD::AMDriver = 1;
+const epicsInt32 ArchonCCD::AMAD = 2;
+const epicsInt32 ArchonCCD::AMLVBias = 3;
+const epicsInt32 ArchonCCD::AMHVBias = 4;
+const epicsInt32 ArchonCCD::AMHeater = 5;
+const epicsInt32 ArchonCCD::AMUnknown = 6;
+const epicsInt32 ArchonCCD::AMHS = 7;
+const epicsInt32 ArchonCCD::AMHVXBias = 8;
+const epicsInt32 ArchonCCD::AMLVXBias = 9;
+const epicsInt32 ArchonCCD::AMLVDS = 10;
+const epicsInt32 ArchonCCD::AMHeaterX = 11;
+const epicsInt32 ArchonCCD::AMXVBias = 12;
+const epicsInt32 ArchonCCD::AMADF = 13;
+const epicsInt32 ArchonCCD::AMADX = 14;
+const epicsInt32 ArchonCCD::AMADLN = 15;
+
 //Definitions of static class data members
 const ArchonCCD::ArchonEnumInfo ArchonCCD::BackplaneTypeEnums[] = {
   {"None",    ABNone,     epicsSevNone},
   {"X12",     ABX12,      epicsSevNone},
   {"X16",     ABX16,      epicsSevNone},
   {"Unknown", ABUnknown,  epicsSevNone},
+};
+
+const ArchonCCD::ArchonEnumInfo ArchonCCD::OverheatEnums[] = {
+  {"Ok",      ABFalse,  epicsSevNone},
+  {"Faulted", ABTrue,   epicsSevMajor},
+};
+
+const ArchonCCD::ArchonEnumInfo ArchonCCD::PowerStatusEnums[] = {
+  {"Faulted", ABFalse,  epicsSevMajor},
+  {"Ok",      ABTrue,   epicsSevNone},
 };
 
 const ArchonCCD::ArchonEnumInfo ArchonCCD::PowerModeEnums[] = {
@@ -94,10 +124,35 @@ const ArchonCCD::ArchonEnumInfo ArchonCCD::BiasChannelEnums[] = {
   {"PV4", ABPV4, epicsSevNone},
 };
 
+const ArchonCCD::ArchonEnumInfo ArchonCCD::ModuleTypeEnums[] = {
+  {"None",    AMNone,     epicsSevNone},
+  {"Driver",  AMDriver,   epicsSevNone},
+  {"AD",      AMAD,       epicsSevNone},
+  {"LVBias",  AMLVBias,   epicsSevNone},
+  {"HVBias",  AMHVBias,   epicsSevNone},
+  {"Heater",  AMHeater,   epicsSevNone},
+  {"Unknown", AMUnknown,  epicsSevInvalid},
+  {"HS",      AMHS,       epicsSevNone},
+  {"HVXBias", AMHVXBias,  epicsSevNone},
+  {"LVXBias", AMLVXBias,  epicsSevNone},
+  {"LVDS",    AMLVDS,     epicsSevNone},
+  {"HeaterX", AMHeaterX,  epicsSevNone},
+  {"XVBias",  AMXVBias,   epicsSevNone},
+  {"ADF",     AMADF,      epicsSevNone},
+  {"ADX",     AMADX,      epicsSevNone},
+  {"ADLN",    AMADLN,     epicsSevNone},
+};
+
 const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnums[] = {
   {BackplaneTypeEnums,
    sizeofArray(BackplaneTypeEnums),
    ArchonBackplaneTypeString},
+  {OverheatEnums,
+   sizeofArray(OverheatEnums),
+   ArchonOverheatString},
+  {PowerStatusEnums,
+   sizeofArray(PowerStatusEnums),
+   ArchonPowerStatusString},
   {PowerModeEnums,
    sizeofArray(PowerModeEnums),
    ArchonPowerModeString},
@@ -110,6 +165,14 @@ const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnums[] = {
 };
 
 const size_t ArchonCCD::ArchonEnumsSize = sizeofArray(ArchonCCD::ArchonEnums);
+
+const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnumsSpecial[] = {
+  {ModuleTypeEnums,
+   sizeofArray(ModuleTypeEnums),
+   ArchonModuleTypeString}
+};
+
+const size_t ArchonCCD::ArchonEnumsSpecialSize = sizeofArray(ArchonCCD::ArchonEnumsSpecial);
 
 static unsigned archonTimeConvert(double time_in_sec)
 {
@@ -191,6 +254,12 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonPwrStatusMessageString, asynParamOctet,   &ArchonPwrStatusMessage);
   createParam(ArchonBackplaneTypeString,    asynParamInt32,   &ArchonBackplaneType);
   createParam(ArchonBackplaneRevString,     asynParamInt32,   &ArchonBackplaneRev);
+  for (unsigned nMod = 0; nMod < ArchonMaxModules; nMod++) {
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%d", ArchonModuleTypeString, nMod+1);
+    createParam(tempString,                 asynParamInt32,   &ArchonModuleType[nMod]);
+  }
+  createParam(ArchonOverheatString,         asynParamInt32,   &ArchonOverheat);
+  createParam(ArchonPowerStatusString,      asynParamInt32,   &ArchonPowerStatus);
   createParam(ArchonPowerModeString,        asynParamInt32,   &ArchonPowerMode);
   createParam(ArchonPowerSwitchString,      asynParamInt32,   &ArchonPowerSwitch);
   createParam(ArchonReadOutModeString,      asynParamInt32,   &ArchonReadOutMode);
@@ -281,9 +350,15 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
     powerMode = status.power();
     printf("%s:%s: current power mode is %s\n", driverName, functionName, status.power_str());
     setIntegerParam(ArchonPowerMode, powerMode);
+    bool isgood = status.is_power_good();
+    printf("%s:%s: current power status is %s\n", driverName, functionName, isgood ? "Ok" : "Faulted");
+    setIntegerParam(ArchonPowerStatus, isgood);
     double temperature = status.backplane_temp();
     printf("%s:%s: current backplane temperature is %f C\n", driverName, functionName, temperature);
     setDoubleParam(ADTemperature, temperature);
+    bool overheat = status.is_overheated();
+    printf("%s:%s: current overheat status is %s\n", driverName, functionName, overheat ? "Faulted" : "Ok");
+    setIntegerParam(ArchonOverheat, overheat);
 
     // Get the bias voltage and current
     mBiasCache = false;
@@ -293,6 +368,11 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
                 "Unable to read bias voltage and current");
     setDoubleParam(ArchonBiasVoltage, biasVoltage);
     setDoubleParam(ArchonBiasCurrent, biasCurrent);
+
+    // initialize the per module parameters
+    for (unsigned nMod = 0; nMod < ArchonMaxModules; nMod++) {
+      setIntegerParam(ArchonModuleType[nMod], system.module_type(nMod+1));
+    }
 
     callParamCallbacks();
   } catch (const std::string &e) {
@@ -460,11 +540,22 @@ asynStatus ArchonCCD::readEnum(asynUser *pasynUser, char *strings[], int values[
               "%s:%s: received enum read request for parameter: %s\n",
                driverName, functionName, name);
     /* Search the enum (if any) that goes with the requested parameter. */
-    for (unsigned nEnum=0; nEnum<ArchonEnumsSize; nEnum++) {
-      if (!strcmp(ArchonEnums[nEnum].name, name)) {
-        matched_enums = ArchonEnums[nEnum].enums;
-        matched_size = ArchonEnums[nEnum].size;
+    for (unsigned nEnum=0; nEnum<ArchonEnumsSpecialSize; nEnum++) {
+      if (!strncmp(ArchonEnumsSpecial[nEnum].name,
+                   name,
+                   strlen(ArchonEnumsSpecial[nEnum].name))) {
+        matched_enums = ArchonEnumsSpecial[nEnum].enums;
+        matched_size = ArchonEnumsSpecial[nEnum].size;
         break;
+      }
+    }
+    if (!matched_enums) {
+      for (unsigned nEnum=0; nEnum<ArchonEnumsSize; nEnum++) {
+        if (!strcmp(ArchonEnums[nEnum].name, name)) {
+          matched_enums = ArchonEnums[nEnum].enums;
+          matched_size = ArchonEnums[nEnum].size;
+          break;
+        }
       }
     }
 
@@ -729,6 +820,8 @@ void ArchonCCD::statusTask(void)
 {
   int biasChan;
   Pds::Archon::PowerMode powerMode;
+  bool isgood;
+  bool overheat;
   float temperature;
   float voltage;
   float current;
@@ -781,6 +874,12 @@ void ArchonCCD::statusTask(void)
         // Read power status of CCD
         powerMode = detStatus.power();
         setIntegerParam(ArchonPowerMode, powerMode);
+        // Read the power status of the controller
+        isgood = detStatus.is_power_good();
+        setIntegerParam(ArchonPowerStatus, isgood);
+        // Read the overheat status of the controller
+        overheat = detStatus.is_overheated();
+        setIntegerParam(ArchonOverheat, overheat);
         // TODO Read module status info
         // Read bias voltage and current
         getIntegerParam(ArchonBiasChan, &biasChan);
