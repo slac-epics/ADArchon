@@ -17,6 +17,10 @@
 #define ArchonBackplaneTypeString     "ARCHON_BACKPLANE_TYPE"
 #define ArchonBackplaneRevString      "ARCHON_BACKPLANE_REV"
 #define ArchonModuleTypeString        "ARCHON_MODULE_TYPE"
+#define ArchonModuleRevString         "ARCHON_MODULE_REV"
+#define ArchonModuleFirmwareString    "ARCHON_MODULE_FIRMWARE"
+#define ArchonModuleIdString          "ARCHON_MODULE_ID"
+#define ArchonModuleTempString        "ARCHON_MODULE_TEMP"
 #define ArchonOverheatString          "ARCHON_OVERHEAT"
 #define ArchonPowerStatusString       "ARCHON_POWER_STATUS"
 #define ArchonPowerModeString         "ARCHON_POWER_MODE"
@@ -86,6 +90,8 @@ class ArchonCCD : public ADDriver {
       size_t size;
       const char *name;
     } ArchonEnumSet;
+    static const ArchonEnumInfo OnOffEnums[];
+    static const ArchonEnumInfo EnableDisableEnums[];
     static const ArchonEnumInfo BackplaneTypeEnums[];
     static const ArchonEnumInfo OverheatEnums[];
     static const ArchonEnumInfo PowerStatusEnums[];
@@ -104,6 +110,10 @@ class ArchonCCD : public ADDriver {
     int ArchonBackplaneType;
     int ArchonBackplaneRev;
     int ArchonModuleType[ArchonMaxModules];
+    int ArchonModuleRev[ArchonMaxModules];
+    int ArchonModuleFirmware[ArchonMaxModules];
+    int ArchonModuleId[ArchonMaxModules];
+    int ArchonModuleTemp[ArchonMaxModules];
     int ArchonOverheat;
     int ArchonPowerStatus;
     int ArchonPowerMode;

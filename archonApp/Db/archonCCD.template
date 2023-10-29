@@ -81,8 +81,6 @@ record(bo, "$(P)$(R)ArchonPowerMode")
     field(PINI, "1")
     field(DTYP, "asynInt32")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_POWER_SWITCH")
-    field(ZNAM, "Off")
-    field(ONAM, "On")
     info( autosaveFields, "VAL" )
 }
 
@@ -131,8 +129,6 @@ record(bo, "$(P)$(R)ArchonLineScanMode")
     field(PINI, "1")
     field(DTYP, "asynInt32")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_LINESCAN_MODE")
-    field(ZNAM, "Disable")
-    field(ONAM, "Enable")
     info( autosaveFields, "VAL" )
 }
 
@@ -140,8 +136,6 @@ record(bi, "$(P)$(R)ArchonLineScanMode_RBV")
 {
     field(DTYP, "asynInt32")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_LINESCAN_MODE")
-    field(ZNAM, "Disable")
-    field(ONAM, "Enable")
     field(SCAN, "I/O Intr")
 }
 
@@ -269,8 +263,6 @@ record(bo, "$(P)$(R)ArchonBiasSwitch")
     field(PINI, "1")
     field(DTYP, "asynInt32")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SWITCH")
-    field(ZNAM, "Off")
-    field(ONAM, "On")
     info( autosaveFields, "VAL" )
 }
 
@@ -278,8 +270,6 @@ record(bi, "$(P)$(R)ArchonBiasSwitch_RBV")
 {
     field(DTYP, "asynInt32")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SWITCH")
-    field(ZNAM, "Off")
-    field(ONAM, "On")
     field(SCAN, "I/O Intr")
 }
 

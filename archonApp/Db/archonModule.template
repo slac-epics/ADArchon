@@ -5,3 +5,39 @@ record(mbbi, "$(P)$(R)MOD$(MOD):ArchonModuleType_RBV")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MODULE_TYPE_$(MOD)")
     field(SCAN, "I/O Intr")
 }
+
+record(waveform, "$(P)$(R)MOD$(MOD):ArchonModuleRev_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MODULE_REV_$(MOD)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)$(R)MOD$(MOD):ArchonModuleFirmware_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MODULE_FIRMWARE_$(MOD)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)$(R)MOD$(MOD):ArchonModuleId_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MODULE_ID_$(MOD)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)MOD$(MOD):ArchonModuleTemp_RBV")
+{
+   field(DTYP, "asynFloat64")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MODULE_TEMP_$(MOD)")
+   field(PREC, "1")
+   field(EGU,  "C")
+   field(SCAN, "I/O Intr")
+}
