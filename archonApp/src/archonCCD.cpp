@@ -1308,7 +1308,7 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
               "%s:%s:, set_external_trigger(%s)\n",
               driverName, functionName, triggerMode ?  "true" : "false");
-    checkStatus(mDrv->set_external_trigger(triggerMode), "Unable to set external trigger setting");
+    checkStatus(mDrv->set_external_trigger(triggerMode), "unable to set external trigger setting");
 
     // Get image configuration info and apply it
     const Pds::Archon::Config& config = mDrv->config();
@@ -1369,32 +1369,41 @@ bool ArchonCCD::waitFrame(void *frameBuffer, Pds::Archon::FrameMetaData *frameMe
 
 void ArchonCCD::dataTask(void)
 {
-  epicsUInt32 status = 0;
   Pds::Archon::AcqMode acquireStatus;
   int bitsPerPixel = 16;
   char *errorString = NULL;
   int acquiring = 0;
+  epicsInt32 imagesPerFrame;
+  epicsInt32 lineScanMode;
+  epicsInt32 numBatchFrames;
   epicsInt32 numImagesCounter;
   epicsInt32 numExposuresCounter;
   epicsInt32 imageCounter;
   epicsInt32 arrayCallbacks;
   epicsInt32 sizeX, sizeY;
+  epicsInt32 sizeImage = 0;
   int adShutterMode;
   NDDataType_t dataType;
   int itemp;
-//TODO  at_32 firstImage, lastImage;
-//TODO  at_32 validFirst, validLast;
   size_t dims[2];
   int nDims = 2;
   int i;
   epicsTimeStamp startTime;
   epicsTimeStamp currentTempTime;
   epicsTimeStamp lastTempTime;
+  epicsUInt8 *pImage;
   NDArray *pArray;
   Pds::Archon::FrameMetaData frameMeta;
   int autoSave;
   int readOutMode;
+  int biasChan;
+  Pds::Archon::PowerMode powerMode;
+  bool isgood;
+  bool overheat;
   float temperature;
+  float voltage;
+  float current;
+  const Pds::Archon::Status& detStatus = mDrv->status();
   static const char *functionName = "dataTask";
 
   printf("%s:%s: Data thread started...\n", driverName, functionName);
@@ -1407,7 +1416,7 @@ void ArchonCCD::dataTask(void)
 
     // Wait for event from main thread to signal that data acquisition has started.
     this->unlock();
-    status = epicsEventWait(dataEvent);
+    epicsEventWait(dataEvent);
     if (mExiting)
         break;
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
@@ -1420,16 +1429,20 @@ void ArchonCCD::dataTask(void)
       // Read some parameters
       getIntegerParam(ADShutterMode, &adShutterMode);
       getIntegerParam(ArchonReadOutMode, &readOutMode);
+      getIntegerParam(ArchonNumBatchFrames, &numBatchFrames);
+      getIntegerParam(ArchonLineScanMode, &lineScanMode);
       getIntegerParam(NDDataType, &itemp); dataType = (NDDataType_t)itemp;
       getIntegerParam(NDAutoSave, &autoSave);
       getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
       getIntegerParam(NDArraySizeX, &sizeX);
       getIntegerParam(NDArraySizeY, &sizeY);
+      // Set the number of images per frame
+      imagesPerFrame = lineScanMode ? numBatchFrames : 1;
       // Set acquiring to 1
       acquiring = 1;
     } else {
       asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-        "%s:%s:, Data thread is running but main thread thinks we are not acquiring.\n",
+        "%s:%s: Data thread is running but main thread thinks we are not acquiring.\n",
         driverName, functionName);
       // Set acquiring to 0
       acquiring = 0;
@@ -1439,20 +1452,106 @@ void ArchonCCD::dataTask(void)
       try {
         acquireStatus = mDrv->acquisition_mode();
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                  "%s:%s:, acquisition_mode returned %d\n",
+                  "%s:%s: acquisition_mode returned %d\n",
                   driverName, functionName, acquireStatus);
         if (acquireStatus == Pds::Archon::Stopped) break;
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                  "%s:%s:, wait_frame().\n",
+                  "%s:%s: wait_frame().\n",
                   driverName, functionName);
         checkStatus(waitFrame(mFrameBuffer, &frameMeta), "failure in wait_frame");
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                  "%s:%s:, wait_frame() has returned.\n",
+                  "%s:%s: wait_frame() has returned.\n",
                   driverName, functionName);
         getIntegerParam(ADNumExposuresCounter, &numExposuresCounter);
         numExposuresCounter++;
         setIntegerParam(ADNumExposuresCounter, numExposuresCounter);
         callParamCallbacks();
+        // process all the images included in the frame
+        for (i=0;i<imagesPerFrame;i++) {
+          // Update counters
+          getIntegerParam(NDArrayCounter, &imageCounter);
+          imageCounter++;
+          setIntegerParam(NDArrayCounter, imageCounter);
+          getIntegerParam(ADNumImagesCounter, &numImagesCounter);
+          numImagesCounter++;
+          setIntegerParam(ADNumImagesCounter, numImagesCounter);
+          // If array callbacks are enabled then read data into NDArray, do callbacks
+          if (arrayCallbacks) {
+            epicsTimeGetCurrent(&startTime);
+            // Allocate an NDArray
+            dims[0] = sizeX;
+            dims[1] = sizeY;
+            if (dataType == NDUInt32) {
+              sizeImage = sizeX * sizeY * sizeof(epicsUInt32);
+              bitsPerPixel = 32;
+            } else if (dataType == NDUInt16) {
+              sizeImage = sizeX * sizeY * sizeof(epicsUInt16);
+              bitsPerPixel = 16;
+            } else {
+              asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+                        "%s:%s: invalid array data type %d\n",
+                        driverName, functionName, dataType);
+              continue;
+            }
+            // set the pImage pointer to the correct offset in the frame
+            pImage = ((epicsUInt8*) mFrameBuffer) + (sizeImage * i);
+            pArray = this->pNDArrayPool->alloc(nDims, dims, dataType, 0, pImage);
+            setIntegerParam(NDArraySize, sizeImage);
+            /* Put the frame number and time stamp into the buffer */
+            pArray->uniqueId = imageCounter;
+            pArray->timeStamp = startTime.secPastEpoch + startTime.nsec / 1.e9;
+            updateTimeStamp(&pArray->epicsTS);
+            pArray->uniqueId = pArray->epicsTS.nsec & 0x1FFFF; // SLAC
+#ifdef NDBitsPerPixelString
+            setIntegerParam(NDBitsPerPixel, bitsPerPixel);
+#endif
+            /* Get any attributes that have been defined for this driver */
+            this->getAttributes(pArray->pAttributeList);
+            /* Call the NDArray callback */
+            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                      "%s:%s:, calling array callbacks\n",
+                      driverName, functionName);
+            doCallbacksGenericPointer(pArray, NDArrayData, 0);
+            // Save the current frame for use with the file writer which needs the data
+            if (this->pArrays[0]) this->pArrays[0]->release();
+            this->pArrays[0] = pArray;
+          }
+          // Periodically update temperature status
+          epicsTimeGetCurrent(&currentTempTime);
+          if (epicsTimeDiffInSeconds(&currentTempTime, &lastTempTime) > mTempPollingPeriod) {
+            // Fetch the status info from controller
+            checkStatus(mDrv->fetch_status(), "Unable to fetch status info");
+            // Read temperature of CCD
+            temperature = detStatus.backplane_temp();
+            setDoubleParam(ADTemperatureActual, temperature);
+            // Read power status of CCD
+            powerMode = detStatus.power();
+            setIntegerParam(ArchonPowerMode, powerMode);
+            // Read the power status of the controller
+            isgood = detStatus.is_power_good();
+            setIntegerParam(ArchonPowerStatus, isgood);
+            // Read the overheat status of the controller
+            overheat = detStatus.is_overheated();
+            setIntegerParam(ArchonOverheat, overheat);
+            // Read the module temps
+            for (unsigned nMod = 0; nMod < ArchonMaxModules; nMod++) {
+              setDoubleParam(ArchonModuleTemp[nMod], detStatus.module_temp(nMod+1));
+            }
+            // Read bias voltage and current
+            getIntegerParam(ArchonBiasChan, &biasChan);
+            checkStatus(mDrv->get_bias(biasChan, &voltage, &current),
+                        "Unable to get bias voltage and current");
+            setDoubleParam(ArchonBiasVoltage, voltage);
+            setDoubleParam(ArchonBiasCurrent, current);
+
+            // update last temp update time
+            lastTempTime = currentTempTime;
+          }
+          // Save data if autosave is enabled
+          //if (autoSave) this->saveDataFrame(i);
+          // finally run the param callbacks
+          callParamCallbacks();
+        }
 
       } catch (const std::string &e) {
         if ((!mExiting) && (!mStopping)) {
