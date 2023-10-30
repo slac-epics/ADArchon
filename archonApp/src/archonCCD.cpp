@@ -82,6 +82,10 @@ const epicsInt32 ArchonCCD::AMADF = 13;
 const epicsInt32 ArchonCCD::AMADX = 14;
 const epicsInt32 ArchonCCD::AMADLN = 15;
 
+const epicsInt32 ArchonCCD::AShutterFullyAuto = 0;
+const epicsInt32 ArchonCCD::AShutterAlwaysOpen = 1;
+const epicsInt32 ArchonCCD::AShutterAlwaysClosed = 2;
+
 const ArchonCCD::ArchonEnumInfo ArchonCCD::OnOffEnums[] = {
   {"Off",     ABFalse,  epicsSevNone},
   {"On",      ABTrue,   epicsSevNone},
@@ -153,6 +157,17 @@ const ArchonCCD::ArchonEnumInfo ArchonCCD::ModuleTypeEnums[] = {
   {"ADLN",    AMADLN,     epicsSevNone},
 };
 
+const ArchonCCD::ArchonEnumInfo ArchonCCD::ShutterModeEnums[] = {
+  {"Fully Auto",    AShutterFullyAuto,    epicsSevNone},
+  {"Always Open",   AShutterAlwaysOpen,   epicsSevNone},
+  {"Always Closed", AShutterAlwaysClosed, epicsSevNone},
+};
+
+const ArchonCCD::ArchonEnumInfo ArchonCCD::ShutterPolarityEnums[] = {
+  {"Normal",    ABFalse,  epicsSevNone},
+  {"Inverted",  ABTrue,   epicsSevNone},
+};
+
 const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnums[] = {
   {OnOffEnums,
    sizeofArray(OnOffEnums),
@@ -180,7 +195,13 @@ const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnums[] = {
    ArchonReadOutModeString},
   {BiasChannelEnums,
    sizeofArray(BiasChannelEnums),
-   ArchonBiasChanString}
+   ArchonBiasChanString},
+  {ShutterModeEnums,
+   sizeofArray(ShutterModeEnums),
+   ArchonShutterModeString},
+  {ShutterPolarityEnums,
+   sizeofArray(ShutterPolarityEnums),
+   ArchonShutterPolarityString}
 };
 
 const size_t ArchonCCD::ArchonEnumsSize = sizeofArray(ArchonCCD::ArchonEnums);
@@ -262,6 +283,9 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   unsigned bitsPerPixel;
   unsigned totalTaplines;
   unsigned activeTaplines;
+  unsigned shutterMode;
+  unsigned shutterPolarity;
+
   Pds::Archon::PowerMode powerMode = Pds::Archon::Unknown;
 
   static const char *functionName = "ArchonCCD";
@@ -270,6 +294,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   epicsAtExit(exitHandler, this);
 
   createParam(ArchonMessageString,          asynParamOctet,   &ArchonMessage);
+  createParam(ArchonShutterMessageString,   asynParamOctet,   &ArchonShutterMessage);
   createParam(ArchonPwrStatusMessageString, asynParamOctet,   &ArchonPwrStatusMessage);
   createParam(ArchonBackplaneTypeString,    asynParamInt32,   &ArchonBackplaneType);
   createParam(ArchonBackplaneRevString,     asynParamInt32,   &ArchonBackplaneRev);
@@ -308,6 +333,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonTotalTaplinesString,    asynParamInt32,   &ArchonTotalTaplines);
   createParam(ArchonActiveTaplinesString,   asynParamInt32,   &ArchonActiveTaplines);
   createParam(ArchonPixelsPerTapString,     asynParamInt32,   &ArchonPixelsPerTap);
+  createParam(ArchonShutterModeString,      asynParamInt32,   &ArchonShutterMode);
+  createParam(ArchonShutterPolarityString,  asynParamInt32,   &ArchonShutterPolarity);
   createParam(ArchonConfigFileString,       asynParamOctet,   &ArchonConfigFile);
 
   // Create the epicsEvent for signaling to the status task when parameters should have changed.
@@ -370,6 +397,16 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
     frameSize = config.frame_size();
     totalTaplines = config.taplines();
     activeTaplines = config.active_taplines();
+    if (config.trigout_force()) {
+      if (config.trigout_level()) {
+        shutterMode = AShutterAlwaysOpen;
+      } else {
+        shutterMode = AShutterAlwaysClosed;
+      }
+    } else {
+      shutterMode = AShutterFullyAuto;
+    }
+    shutterPolarity = config.trigout_invert();
 
     // Get the current temperature
     checkStatus(mDrv->fetch_status(), "Unable to fetch status info");
@@ -476,6 +513,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   status |= setIntegerParam(ArchonTotalTaplines, totalTaplines);
   status |= setIntegerParam(ArchonActiveTaplines, activeTaplines);
   status |= setIntegerParam(ArchonPixelsPerTap, mPixelCount);
+  status |= setIntegerParam(ArchonShutterMode, shutterMode);
+  status |= setIntegerParam(ArchonShutterPolarity, shutterPolarity);
 
   callParamCallbacks();
 
@@ -720,6 +759,12 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
   }
   else if (function == ADShutterControl) {
     setShutter(value);
+    status = setupShutter(value);
+  }
+  else if ((function == ADShutterMode) ||
+           (function == ArchonShutterMode) ||
+           (function == ArchonShutterPolarity)) {
+    status = setupShutter(-1);
   }
   else {
     status = ADDriver::writeInt32(pasynUser, value);
@@ -959,6 +1004,80 @@ void ArchonCCD::statusTask(void)
   mExited++;
 }
 
+asynStatus ArchonCCD::setupShutter(int command)
+{
+  int adShutterMode;
+  int shutterMode;
+  int shutterPolarity;
+  bool force;
+  bool level;
+  static const char *functionName = "setupShutter";
+
+  getIntegerParam(ADShutterMode, &adShutterMode);
+  // shutter mode None
+  if (adShutterMode == ADShutterModeNone) {
+    setStringParam(ArchonShutterMessage, " ");
+    return asynSuccess;
+  }
+  // shutter mode epics
+  if ((adShutterMode == ADShutterModeEPICS) && (command != -1)) {
+    ADDriver::setShutter(command);
+    setStringParam(ArchonShutterMessage, " ");
+    return asynSuccess;
+  }
+
+  // check if the detector is initialized
+  if (!mInitOK) {
+    return asynDisabled;
+  }
+
+  if (mAcquiringData) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: Unable to set detector shutter while acquiring\n",
+              driverName, functionName);
+    setStringParam(ArchonShutterMessage, "Cannot set shutter while acquiring");
+    return asynError;
+  }
+
+  getIntegerParam(ArchonShutterMode, &shutterMode);
+  getIntegerParam(ArchonShutterPolarity, &shutterPolarity);
+
+  if (command == ADShutterClosed) {
+    shutterMode = AShutterAlwaysClosed;
+    setIntegerParam(ADShutterStatus, ADShutterClosed);
+  } else {
+    if (shutterMode == AShutterAlwaysOpen) {
+      setIntegerParam(ADShutterStatus, ADShutterOpen);
+    }
+  }
+
+  if (shutterMode == AShutterAlwaysClosed) {
+    force = true;
+    level = false;
+  } else if (shutterMode == AShutterAlwaysOpen) {
+    force = true;
+    level = true;
+  } else {
+    force = false;
+    level = false;
+  }
+
+  try {
+    checkStatus(mDrv->set_trigger_out(force, level, shutterPolarity), "Unable to set trigger out settings");
+
+    /* For a successful setup, clear the error message. */
+    setStringParam(ArchonShutterMessage, " ");
+  } catch (const std::string &e) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: %s\n",
+              driverName, functionName, e.c_str());
+    setStringParam(ArchonShutterMessage, e.c_str());
+    return asynError;
+  }
+
+  return asynSuccess;
+}
+
 asynStatus ArchonCCD::setupPowerAndBias()
 {
   int powerSwitch;
@@ -1044,6 +1163,7 @@ asynStatus ArchonCCD::setupPowerAndBias()
 
   return asynSuccess;
 }
+
 asynStatus ArchonCCD::setupAcquisition(bool commit)
 {
   int numExposures;

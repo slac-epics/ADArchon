@@ -13,6 +13,7 @@
 #include <alarm.h>
 
 #define ArchonMessageString           "ARCHON_MESSAGE"
+#define ArchonShutterMessageString    "ARCHON_SHUTTER_MESSAGE"
 #define ArchonPwrStatusMessageString  "ARCHON_PWR_STAT"
 #define ArchonBackplaneTypeString     "ARCHON_BACKPLANE_TYPE"
 #define ArchonBackplaneRevString      "ARCHON_BACKPLANE_REV"
@@ -44,6 +45,8 @@
 #define ArchonTotalTaplinesString     "ARCHON_TOTAL_TAPLINES"
 #define ArchonActiveTaplinesString    "ARCHON_ACTIVE_TAPLINES"
 #define ArchonPixelsPerTapString      "ARCHON_PIXELS_PER_TAP"
+#define ArchonShutterModeString       "ARCHON_SHUTTER_MODE"
+#define ArchonShutterPolarityString   "ARCHON_SHUTTER_POLARITY"
 #define ArchonConfigFileString        "ARCHON_CONFIG_FILE"
 
 #define ArchonMaxModules 12
@@ -99,6 +102,8 @@ class ArchonCCD : public ADDriver {
     static const ArchonEnumInfo ReadOutModeEnums[];
     static const ArchonEnumInfo BiasChannelEnums[];
     static const ArchonEnumInfo ModuleTypeEnums[];
+    static const ArchonEnumInfo ShutterModeEnums[];
+    static const ArchonEnumInfo ShutterPolarityEnums[];
     static const ArchonEnumSet ArchonEnums[];
     static const size_t ArchonEnumsSize;
     static const ArchonEnumSet ArchonEnumsSpecial[];
@@ -106,6 +111,7 @@ class ArchonCCD : public ADDriver {
 
     // parameters
     int ArchonMessage;
+    int ArchonShutterMessage;
     int ArchonPwrStatusMessage;
     int ArchonBackplaneType;
     int ArchonBackplaneRev;
@@ -137,6 +143,8 @@ class ArchonCCD : public ADDriver {
     int ArchonTotalTaplines;
     int ArchonActiveTaplines;
     int ArchonPixelsPerTap;
+    int ArchonShutterMode;
+    int ArchonShutterPolarity;
     int ArchonConfigFile;
 #define FIRST_ARCHON_PARAM ArchonMessage
 #define LAST_ARCHON_PARAM ArchonConfigFile
@@ -145,6 +153,7 @@ class ArchonCCD : public ADDriver {
 
     bool checkStatus(bool status, const char *message);
     asynStatus setupAcquisition(bool commit=false);
+    asynStatus setupShutter(int command);
     asynStatus setupPowerAndBias();
     asynStatus setupFramePoll(double period);
     bool waitFrame(void *frameBuffer, Pds::Archon::FrameMetaData *frameMeta);
@@ -211,6 +220,13 @@ class ArchonCCD : public ADDriver {
     static const epicsInt32 AMADF;
     static const epicsInt32 AMADX;
     static const epicsInt32 AMADLN;
+
+    /**
+     * List of detector shutter modes.
+     */
+    static const epicsInt32 AShutterFullyAuto;
+    static const epicsInt32 AShutterAlwaysOpen;
+    static const epicsInt32 AShutterAlwaysClosed;
 
     epicsEventId statusEvent;
     epicsEventId dataEvent;
