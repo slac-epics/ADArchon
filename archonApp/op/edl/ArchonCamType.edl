@@ -19,7 +19,7 @@ ctlBgColor1 index 5
 ctlBgColor2 index 12
 topShadowColor index 1
 botShadowColor index 13
-title "CamType Andor"
+title "CamType Archon"
 showGrid
 snapToGrid
 gridSize 4
@@ -33,7 +33,7 @@ major 4
 minor 0
 release 0
 x 0
-y 220
+y 244
 w 176
 h 24
 
@@ -46,7 +46,7 @@ major 4
 minor 4
 release 0
 x 0
-y 220
+y 244
 w 176
 h 24
 fgColor index 14
@@ -82,7 +82,7 @@ major 4
 minor 7
 release 0
 x 22
-y 224
+y 248
 w 152
 h 16
 controlPv "$(P)$(R)CamModel"
@@ -140,61 +140,48 @@ value {
 }
 endObjectProperties
 
-# (Menu Button)
-object activeMenuButtonClass
+# (Text Control)
+object activeXTextDspClass
 beginObjectProperties
 major 4
-minor 0
+minor 7
 release 0
 x 144
 y 136
 w 88
 h 20
-fgColor index 14
-bgColor index 63
-inconsistentColor index 12
-topShadowColor index 2
-botShadowColor index 12
-controlPv "$(P)$(R)AndorEMGainMode"
-indicatorPv "$(P)$(R)AndorEMGainMode"
+controlPv "$(P)$(R)ArchonPreFrameSkip"
+format "decimal"
 font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
 endObjectProperties
 
-# (Menu Button)
-object activeMenuButtonClass
+# (Text Control)
+object activeXTextDspClass
 beginObjectProperties
 major 4
-minor 0
+minor 7
 release 0
 x 144
-y 164
+y 160
 w 88
 h 20
-fgColor index 14
-bgColor index 63
-inconsistentColor index 12
-topShadowColor index 2
-botShadowColor index 12
-controlPv "$(P)$(R)AndorEMGainAdvanced"
-indicatorPv "$(P)$(R)AndorEMGainAdvanced"
+controlPv "$(P)$(R)ArchonClockAT"
+format "decimal"
 font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 7
-release 0
-x 248
-y 188
-w 92
-h 20
-controlPv "$(P)$(R)AndorADCSpeed_RBV"
-format "string"
-font "helvetica-medium-r-14.0"
-fgColor index 15
-bgColor index 12
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
 limitsFromDb
 nullColor index 40
 smartRefresh
@@ -203,26 +190,6 @@ newPos
 objType "controls"
 endObjectProperties
 
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 44
-y 188
-w 90
-h 20
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 3
-useDisplayBg
-value {
-  "ADC Speed"
-}
-endObjectProperties
-
 # (Text Monitor)
 object activeXTextDspClass:noedit
 beginObjectProperties
@@ -230,55 +197,37 @@ major 4
 minor 7
 release 0
 x 248
-y 88
+y 184
 w 92
 h 20
-controlPv "$(P)$(R)AndorPreAmpGain_RBV"
-format "string"
-font "helvetica-medium-r-14.0"
-fgColor index 15
-bgColor index 12
-limitsFromDb
-nullColor index 40
-smartRefresh
-fastUpdate
-newPos
-objType "controls"
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 1
-x 12
-y 88
-w 120
-h 20
-font "helvetica-medium-r-14.0"
-fontAlign "right"
-fgColor index 14
-bgColor index 3
-useDisplayBg
-value {
-  "Pre-amp Gain"
-}
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 7
-release 0
-x 248
-y 112
-w 92
-h 20
-controlPv "$(P)$(R)AndorEMGain_RBV"
+controlPv "$(P)$(R)ArchonClockST_RBV"
 format "decimal"
 font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 208
+w 92
+h 20
+controlPv "$(P)$(R)ArchonClockSTM1_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
 fgColor index 15
 bgColor index 12
 limitsFromDb
@@ -295,9 +244,9 @@ beginObjectProperties
 major 4
 minor 1
 release 1
-x 64
-y 112
-w 70
+x 12
+y 184
+w 120
 h 20
 font "helvetica-medium-r-14.0"
 fontAlign "right"
@@ -305,7 +254,115 @@ fgColor index 14
 bgColor index 3
 useDisplayBg
 value {
-  "EM Gain"
+  "Clock ST"
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 208
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Clock STM1"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 88
+w 92
+h 20
+controlPv "$(P)$(R)ArchonPreFrameClear_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 88
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Pre-frame Clear"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 112
+w 92
+h 20
+controlPv "$(P)$(R)ArchonIdleClear_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 112
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Idle Clear"
 }
 endObjectProperties
 
@@ -319,9 +376,10 @@ x 248
 y 136
 w 92
 h 20
-controlPv "$(P)$(R)AndorEMGainMode_RBV"
-format "string"
+controlPv "$(P)$(R)ArchonPreFrameSkip_RBV"
+format "decimal"
 font "helvetica-medium-r-14.0"
+fontAlign "center"
 fgColor index 15
 bgColor index 12
 limitsFromDb
@@ -348,7 +406,7 @@ fgColor index 14
 bgColor index 3
 useDisplayBg
 value {
-  "EM Gain Mode"
+  "Pre-frame Skip"
 }
 endObjectProperties
 
@@ -359,12 +417,13 @@ major 4
 minor 7
 release 0
 x 248
-y 164
+y 160
 w 92
 h 20
-controlPv "$(P)$(R)AndorEMGainAdvanced_RBV"
-format "string"
+controlPv "$(P)$(R)ArchonClockAT_RBV"
+format "decimal"
 font "helvetica-medium-r-14.0"
+fontAlign "center"
 fgColor index 15
 bgColor index 12
 limitsFromDb
@@ -391,7 +450,7 @@ fgColor index 14
 bgColor index 3
 useDisplayBg
 value {
-  "EM Gain Adv."
+  "Clock AT"
 }
 endObjectProperties
 
@@ -405,7 +464,7 @@ x 144
 y 112
 w 88
 h 20
-controlPv "$(P)$(R)AndorEMGain"
+controlPv "$(P)$(R)ArchonIdleClear"
 format "decimal"
 font "helvetica-medium-r-12.0"
 fgColor index 25
@@ -427,15 +486,41 @@ major 4
 minor 7
 release 0
 x 144
-y 188
+y 184
 w 88
 h 20
-controlPv "$(P)$(R)AndorADCSpeed"
+controlPv "$(P)$(R)ArchonClockST"
 format "decimal"
 font "helvetica-medium-r-12.0"
 fgColor index 25
 bgColor index 5
 editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 208
+w 88
+h 20
+controlPv "$(P)$(R)ArchonClockSTM1"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
 limitsFromDb
 nullColor index 40
 smartRefresh
@@ -454,12 +539,13 @@ x 144
 y 88
 w 88
 h 20
-controlPv "$(P)$(R)AndorPreAmpGain"
+controlPv "$(P)$(R)ArchonPreFrameClear"
 format "decimal"
 font "helvetica-medium-r-12.0"
 fgColor index 25
 bgColor index 5
 editable
+motifWidget
 limitsFromDb
 nullColor index 40
 smartRefresh

@@ -6,7 +6,7 @@ release 1
 x 1924
 y 368
 w 1089
-h 1002
+h 960
 font "helvetica-medium-r-12.0"
 ctlFont "helvetica-medium-r-12.0"
 btnFont "helvetica-medium-r-12.0"
@@ -138,7 +138,7 @@ release 0
 x 8
 y 48
 w 1070
-h 940
+h 900
 fgColor index 14
 bgColor index 0
 topShadowColor index 1
