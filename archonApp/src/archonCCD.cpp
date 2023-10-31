@@ -275,6 +275,10 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   char tempString[256];
   std::string serialNumber;
   std::string firmwareVersion;
+  unsigned moduleType;
+  unsigned moduleRev;
+  std::string moduleFirmware;
+  std::string moduleId;
   unsigned backplaneType;
   unsigned backplaneRev;
   unsigned sampleMode;
@@ -307,6 +311,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
     createParam(tempString,                 asynParamOctet,   &ArchonModuleFirmware[nMod]);
     epicsSnprintf(tempString, sizeof(tempString), "%s_%d", ArchonModuleIdString, nMod+1);
     createParam(tempString,                 asynParamOctet,   &ArchonModuleId[nMod]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%d", ArchonModuleInfoString, nMod+1);
+    createParam(tempString,                 asynParamOctet,   &ArchonModuleInfo[nMod]);
     epicsSnprintf(tempString, sizeof(tempString), "%s_%d", ArchonModuleTempString, nMod+1);
     createParam(tempString,                 asynParamFloat64, &ArchonModuleTemp[nMod]);
   }
@@ -435,11 +441,21 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
 
     // initialize the per module parameters
     for (unsigned nMod = 0; nMod < ArchonMaxModules; nMod++) {
-      setIntegerParam(ArchonModuleType[nMod], system.module_type(nMod+1));
-      epicsSnprintf(tempString, sizeof(tempString), "Rev %c", 'A' + system.module_rev(nMod+1));
+      moduleType = system.module_type(nMod+1);
+      moduleRev = system.module_rev(nMod+1);
+      moduleFirmware = system.module_version(nMod+1);
+      moduleId = system.module_id(nMod+1);
+      setIntegerParam(ArchonModuleType[nMod], moduleType);
+      epicsSnprintf(tempString, sizeof(tempString), "Rev %c", 'A' + moduleRev);
       setStringParam(ArchonModuleRev[nMod], tempString);
-      setStringParam(ArchonModuleFirmware[nMod], system.module_version(nMod+1));
-      setStringParam(ArchonModuleId[nMod], system.module_id(nMod+1));
+      setStringParam(ArchonModuleFirmware[nMod], moduleFirmware);
+      setStringParam(ArchonModuleId[nMod], moduleId);
+      epicsSnprintf(tempString, sizeof(tempString), "%s Rev %c %s %s",
+                    moduleType < sizeofArray(ModuleTypeEnums) ? ModuleTypeEnums[moduleType].name.c_str() : "Unknown",
+                    'A' + moduleRev,
+                    moduleFirmware.c_str(),
+                    moduleId.c_str());
+      setStringParam(ArchonModuleInfo[nMod], tempString);
       setDoubleParam(ArchonModuleTemp[nMod], status.module_temp(nMod+1));
     }
 
@@ -1272,7 +1288,7 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
               "%s:%s:, set_horizontal_binning(%d)\n",
               driverName, functionName, binX);
-    checkStatus(mDrv->set_horizontal_binning(binX), "unable to set horizontal binning");
+    checkStatus(mDrv->set_horizontal_binning(binX-1), "unable to set horizontal binning");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
               "%s:%s:, set_number_of_lines(%d, %d)\n",
               driverName, functionName, sizeY/binY, lineScanMode ? numBatchFrames : 0);
@@ -1309,6 +1325,19 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
               "%s:%s:, set_external_trigger(%s)\n",
               driverName, functionName, triggerMode ?  "true" : "false");
     checkStatus(mDrv->set_external_trigger(triggerMode), "unable to set external trigger setting");
+    // Set the clock parameters
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+              "%s:%s:, set_clock_at(%d)\n",
+              driverName, functionName, clockAt);
+    checkStatus(mDrv->set_clock_at(clockAt), "unable to set clock at setting");
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+              "%s:%s:, set_clock_st(%d)\n",
+              driverName, functionName, clockSt);
+    checkStatus(mDrv->set_clock_st(clockSt), "unable to set clock st setting");
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+              "%s:%s:, set_clock_stm1(%d)\n",
+              driverName, functionName, clockStm1);
+    checkStatus(mDrv->set_clock_stm1(clockStm1), "unable to set clock stm1 setting");
 
     // Get image configuration info and apply it
     const Pds::Archon::Config& config = mDrv->config();

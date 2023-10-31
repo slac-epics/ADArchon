@@ -21,6 +21,7 @@
 #define ArchonModuleRevString         "ARCHON_MODULE_REV"
 #define ArchonModuleFirmwareString    "ARCHON_MODULE_FIRMWARE"
 #define ArchonModuleIdString          "ARCHON_MODULE_ID"
+#define ArchonModuleInfoString        "ARCHON_MODULE_INFO"
 #define ArchonModuleTempString        "ARCHON_MODULE_TEMP"
 #define ArchonOverheatString          "ARCHON_OVERHEAT"
 #define ArchonPowerStatusString       "ARCHON_POWER_STATUS"
@@ -119,6 +120,7 @@ class ArchonCCD : public ADDriver {
     int ArchonModuleRev[ArchonMaxModules];
     int ArchonModuleFirmware[ArchonMaxModules];
     int ArchonModuleId[ArchonMaxModules];
+    int ArchonModuleInfo[ArchonMaxModules];
     int ArchonModuleTemp[ArchonMaxModules];
     int ArchonOverheat;
     int ArchonPowerStatus;

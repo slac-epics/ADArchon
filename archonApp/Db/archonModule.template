@@ -33,6 +33,15 @@ record(waveform, "$(P)$(R)MOD$(MOD):ArchonModuleId_RBV")
     field(SCAN, "I/O Intr")
 }
 
+record(waveform, "$(P)$(R)MOD$(MOD):ArchonModuleInfo_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MODULE_INFO_$(MOD)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
 record(ai, "$(P)$(R)MOD$(MOD):ArchonModuleTemp_RBV")
 {
    field(DTYP, "asynFloat64")
