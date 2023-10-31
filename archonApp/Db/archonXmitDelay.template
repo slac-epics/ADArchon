@@ -30,17 +30,17 @@
 # AndorReadOutTime_RBV includes the readout plus transfer time over USB which makes this simple.
 record( calc, "$(P)$(R)XmitDelay" )
 {
-	field( INPA, "$(P)$(R)AndorReadOutTime_RBV CP MS" )
+	field( INPA, "$(P)$(R)ArchonClockAT_RBV CP MS" )
 	field( INPB, "$(P)$(R)ArraySize_RBV CPP MS" )
 	field( INPC, "$(P)$(R)ProcDelayPerPixel CPP MS" )
-	field( CALC, "A+(B*C)")
+	field( CALC, "(B*C)")
 	field( EGU,  "Sec" )
 	field( PREC, "5" )
 }
 
 record( ao, "$(P)$(R)ProcDelayPerPixel" )
 {
-	field( DOL,  "4.6e-09" )
+	field( DOL,  "1.98e-07" )
 	field( EGU,  "Sec/px" )
 	field( PREC, "5" )
 	field( PINI, "YES" )
@@ -49,7 +49,7 @@ record( ao, "$(P)$(R)ProcDelayPerPixel" )
 
 record( ao, "$(P)$(R)DriverProcDelay" )
 {
-	field( DOL,  "2.0e-5" )
+	field( DOL,  "9.23e-2" )
 	field( EGU,  "Sec" )
 	field( PREC, "3" )
 	field( PINI, "YES" )
@@ -65,9 +65,10 @@ record( ao, "$(P)$(R)DriverProcDelay" )
 record( calc, "$(P)$(R)TrigToTS_Calc" )
 {
 	field( INPA, "$(P)$(R)AcquireTime_RBV CP MS" )
-	field( INPB, "$(P)$(R)XmitDelay CP MS" )
-	field( INPC, "$(P)$(R)DriverProcDelay CP MS" )
-	field( CALC, "A+B+C" )
+    field( INPB, "$(P)$(R)ArchonNonIntTime CP MS" )
+	field( INPC, "$(P)$(R)XmitDelay CP MS" )
+	field( INPD, "$(P)$(R)DriverProcDelay CP MS" )
+	field( CALC, "A+B+C+D" )
 	field( EGU,  "sec" )
 	field( PREC, "5" )
 }
