@@ -1,4 +1,4 @@
-# Database for estimating XmitDelay for Andor Cameras
+# Database for estimating XmitDelay for Archon Cameras
 
 # XmitDelay for Newton D0940P
 # 0.0001 sec exposure, 0 delay
@@ -27,20 +27,20 @@
 # each additional row added transmission time for 2048 pixels.
 # Assume ProcDelayPerPixel = ProcDelayPerCol
 # where ProcDelayPerPixel accounts for additional processing delay for each additional pixel.
-# AndorReadOutTime_RBV includes the readout plus transfer time over USB which makes this simple.
+# ArchonReadOutTime_RBV includes the readout plus transfer time over USB which makes this simple.
 record( calc, "$(P)$(R)XmitDelay" )
 {
-	field( INPA, "$(P)$(R)ArchonClockAT_RBV CP MS" )
-	field( INPB, "$(P)$(R)ArraySize_RBV CPP MS" )
-	field( INPC, "$(P)$(R)ProcDelayPerPixel CPP MS" )
-	field( CALC, "(B*C)")
-	field( EGU,  "Sec" )
+    field( INPA, "$(P)$(R)ArchonReadOutTime_RBV CP MS" )
+    field( INPB, "$(P)$(R)ArraySize_RBV CP MS" )
+    field( INPC, "$(P)$(R)ProcDelayPerPixel CP MS" )
+    field( CALC, "A+(B*C)")
+	field( EGU,  "sec" )
 	field( PREC, "5" )
 }
 
 record( ao, "$(P)$(R)ProcDelayPerPixel" )
 {
-	field( DOL,  "1.98e-07" )
+	field( DOL,  "2.9676E-08" )
 	field( EGU,  "Sec/px" )
 	field( PREC, "5" )
 	field( PINI, "YES" )
@@ -49,7 +49,7 @@ record( ao, "$(P)$(R)ProcDelayPerPixel" )
 
 record( ao, "$(P)$(R)DriverProcDelay" )
 {
-	field( DOL,  "9.23e-2" )
+	field( DOL,  "8.642e-03" )
 	field( EGU,  "Sec" )
 	field( PREC, "3" )
 	field( PINI, "YES" )

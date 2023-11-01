@@ -289,6 +289,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   unsigned activeTaplines;
   unsigned shutterMode;
   unsigned shutterPolarity;
+  double readoutTime;
 
   Pds::Archon::PowerMode powerMode = Pds::Archon::Unknown;
 
@@ -330,6 +331,9 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonClockAtString,          asynParamInt32,   &ArchonClockAt);
   createParam(ArchonClockStString,          asynParamInt32,   &ArchonClockSt);
   createParam(ArchonClockStm1String,        asynParamInt32,   &ArchonClockStm1);
+  createParam(ArchonClockCtString,          asynParamInt32,   &ArchonClockCt);
+  createParam(ArchonNumDummyPixelsString,   asynParamInt32,   &ArchonNumDummyPixels);
+  createParam(ArchonReadOutTimeString,      asynParamFloat64, &ArchonReadOutTime);
   createParam(ArchonBiasChanString,         asynParamInt32,   &ArchonBiasChan);
   createParam(ArchonBiasSetpointString,     asynParamFloat64, &ArchonBiasSetpoint);
   createParam(ArchonBiasSwitchString,       asynParamInt32,   &ArchonBiasSwitch);
@@ -413,6 +417,12 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
       shutterMode = AShutterFullyAuto;
     }
     shutterPolarity = config.trigout_invert();
+
+    // Get readout constants from configuration
+    mClockCt = strtoul(config.constant("CT").c_str(), NULL, 0);
+    mDummyPixelCount = strtoul(config.constant("DPIXELS").c_str(), NULL, 0);
+    readoutTime = calcReadOutTime(clkat, clkst, clkstm1, sizeY, binX, binY, preframeSkip, preframeClear);
+
 
     // Get the current temperature
     checkStatus(mDrv->fetch_status(), "Unable to fetch status info");
@@ -531,6 +541,9 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   status |= setIntegerParam(ArchonPixelsPerTap, mPixelCount);
   status |= setIntegerParam(ArchonShutterMode, shutterMode);
   status |= setIntegerParam(ArchonShutterPolarity, shutterPolarity);
+  status |= setIntegerParam(ArchonClockCt, mClockCt);
+  status |= setIntegerParam(ArchonNumDummyPixels, mDummyPixelCount);
+  status |= setDoubleParam (ArchonReadOutTime, readoutTime);
 
   callParamCallbacks();
 
@@ -1020,6 +1033,21 @@ void ArchonCCD::statusTask(void)
   mExited++;
 }
 
+double ArchonCCD::calcReadOutTime(unsigned at, unsigned st, unsigned stm1,
+                                  unsigned sizeY, unsigned binX, unsigned binY,
+                                  unsigned skips, unsigned sweeps)
+{
+  static const unsigned pixelclk = 330;
+  unsigned vshift = 6 * at;
+  unsigned hshift = 5 * st + stm1;
+  unsigned pixel = pixelclk + (binX - 1) * hshift;
+  unsigned line = 2 * st + mClockCt + vshift * binY + pixelclk * (mDummyPixelCount + 1) + mPixelCount/binX * pixel;
+  unsigned skipline = 2 * st + mClockCt + vshift + mPixelCount * hshift;
+  unsigned nclocks = skipline * (skips + sweeps) + line * sizeY;
+
+  return nclocks * 10.e-9;
+}
+
 asynStatus ArchonCCD::setupShutter(int command)
 {
   int adShutterMode;
@@ -1199,6 +1227,7 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
   unsigned sampleMode;
   unsigned frameSize;
   unsigned bitsPerPixel;
+  double readoutTime;
   static const char *functionName = "setupAcquisition";
 
   if (!mInitOK) {
@@ -1361,6 +1390,10 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
       sizeY /= numBatchFrames;
       frameSize /= numBatchFrames;
     }
+
+    // calculate the image readout time
+    readoutTime = calcReadOutTime(clockAt, clockSt, clockStm1, sizeY, binX, binY, preframeSkip, preframeClear);
+    setDoubleParam(ArchonReadOutTime, readoutTime);
 
     setIntegerParam(NDArraySizeX, sizeX);
     setIntegerParam(NDArraySizeY, sizeY);

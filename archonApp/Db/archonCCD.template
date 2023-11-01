@@ -196,6 +196,7 @@ record(ao, "$(P)$(R)ArchonNonIntTime")
     field(DTYP, "asynFloat64")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_NONINT_TIME")
     field(PREC, "3")
+    field(EGU,  "sec")
     field(VAL,  "0.01")
     info( autosaveFields, "VAL" )
 }
@@ -205,6 +206,7 @@ record(ai, "$(P)$(R)ArchonNonIntTime_RBV")
     field(DTYP, "asynFloat64")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_NONINT_TIME")
     field(PREC, "3")
+    field(EGU,  "sec")
     field(SCAN, "I/O Intr")
 }
 
@@ -295,6 +297,7 @@ record(ao, "$(P)$(R)ArchonBiasSetpoint")
     field(DTYP, "asynFloat64")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SETPOINT")
     field(PREC, "1")
+    field(EGU,  "V")
     field(VAL,  "-40.0")
     info( autosaveFields, "VAL" )
 }
@@ -304,6 +307,7 @@ record(ai, "$(P)$(R)ArchonBiasSetpoint_RBV")
     field(DTYP, "asynFloat64")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SETPOINT")
     field(PREC, "1")
+    field(EGU,  "V")
     field(SCAN, "I/O Intr")
 }
 
@@ -347,6 +351,29 @@ record(longin, "$(P)$(R)ArchonPixelsPerTap_RBV")
     field(SCAN, "I/O Intr")
 }
 
+record(longin, "$(P)$(R)ArchonClockCT_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_CLOCK_CT")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(R)ArchonNumDummyPixels_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_NUM_DUMMY_PIXELS")
+    field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)ArchonReadOutTime_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_READOUT_TIME")
+    field(PREC, "5")
+    field(EGU,  "sec")
+    field(SCAN, "I/O Intr")
+}
+
 record(ao, "$(P)$(R)ArchonFramePollPeriod")
 {
     field(PINI, "1")
@@ -354,6 +381,7 @@ record(ao, "$(P)$(R)ArchonFramePollPeriod")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_FRAME_POLL_PERIOD")
     field(PREC, "6")
     field(VAL,  "0.001")
+    field(EGU,  "sec")
     info( autosaveFields, "VAL" )
 }
 
@@ -362,6 +390,7 @@ record(ai, "$(P)$(R)ArchonFramePollPeriod_RBV")
     field(DTYP, "asynFloat64")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_FRAME_POLL_PERIOD")
     field(PREC, "6")
+    field(EGU,  "sec")
     field(SCAN, "I/O Intr")
 }
 

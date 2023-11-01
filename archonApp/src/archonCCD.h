@@ -37,6 +37,9 @@
 #define ArchonClockAtString           "ARCHON_CLOCK_AT"
 #define ArchonClockStString           "ARCHON_CLOCK_ST"
 #define ArchonClockStm1String         "ARCHON_CLOCK_STM1"
+#define ArchonClockCtString           "ARCHON_CLOCK_CT"
+#define ArchonNumDummyPixelsString    "ARCHON_NUM_DUMMY_PIXELS"
+#define ArchonReadOutTimeString       "ARCHON_READOUT_TIME"
 #define ArchonBiasChanString          "ARCHON_BIAS_CHAN"
 #define ArchonBiasSetpointString      "ARCHON_BIAS_SETPOINT"
 #define ArchonBiasSwitchString        "ARCHON_BIAS_SWITCH"
@@ -136,6 +139,9 @@ class ArchonCCD : public ADDriver {
     int ArchonClockAt;
     int ArchonClockSt;
     int ArchonClockStm1;
+    int ArchonClockCt;
+    int ArchonNumDummyPixels;
+    int ArchonReadOutTime;
     int ArchonBiasChan;
     int ArchonBiasSetpoint;
     int ArchonBiasSwitch;
@@ -158,6 +164,9 @@ class ArchonCCD : public ADDriver {
     asynStatus setupShutter(int command);
     asynStatus setupPowerAndBias();
     asynStatus setupFramePoll(double period);
+    double calcReadOutTime(unsigned at, unsigned st, unsigned stm1,
+                           unsigned sizey, unsigned binx, unsigned biny,
+                           unsigned skips, unsigned sweeps);
     bool waitFrame(void *frameBuffer, Pds::Archon::FrameMetaData *frameMeta);
     //void saveDataFrame(int frameNumber);
 
@@ -251,6 +260,9 @@ class ArchonCCD : public ADDriver {
     // default sensor size
     unsigned mPixelCount;
     unsigned mLineCount;
+    // readout time constants
+    unsigned mDummyPixelCount;
+    unsigned mClockCt;
 
     // last set bias value cache
     bool mBiasCache;

@@ -588,10 +588,11 @@ format "decimal"
 font "helvetica-medium-r-14.0"
 fgColor index 15
 bgColor index 12
-precision 5
+precision 4
 nullColor index 40
 smartRefresh
 fastUpdate
+showUnits
 newPos
 objType "controls"
 endObjectProperties
@@ -898,10 +899,11 @@ format "decimal"
 font "helvetica-medium-r-14.0"
 fgColor index 15
 bgColor index 12
-precision 5
+precision 4
 nullColor index 40
 smartRefresh
 fastUpdate
+showUnits
 newPos
 objType "controls"
 endObjectProperties
@@ -966,10 +968,11 @@ format "decimal"
 font "helvetica-medium-r-14.0"
 fgColor index 15
 bgColor index 12
-precision 5
+precision 4
 nullColor index 40
 smartRefresh
 fastUpdate
+showUnits
 newPos
 objType "controls"
 endObjectProperties
@@ -2003,7 +2006,7 @@ release 0
 x 5
 y 380
 w 350
-h 485
+h 505
 lineColor index 14
 fillColor index 14
 lineWidth 0
@@ -2690,6 +2693,26 @@ value {
 }
 endObjectProperties
 
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 17
+y 858
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Readout Time"
+}
+endObjectProperties
+
 # (Text Monitor)
 object activeXTextDspClass:noedit
 beginObjectProperties
@@ -3060,6 +3083,30 @@ newPos
 objType "controls"
 endObjectProperties
 
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 240
+y 858
+w 80
+h 20
+controlPv "$(P)$(R)ArchonReadOutTime_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+precision 4
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
 
 # (Static Text)
 object activeXTextClass
