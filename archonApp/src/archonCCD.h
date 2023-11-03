@@ -61,6 +61,7 @@
 namespace Pds {
   namespace Archon {
     class Driver;
+    class FrameMetaData;
   }
 }
 
@@ -164,11 +165,12 @@ class ArchonCCD : public ADDriver {
     asynStatus setupShutter(int command);
     asynStatus setupPowerAndBias();
     asynStatus setupFramePoll(double period);
+    asynStatus setupFileWrite(bool trigger=false);
     double calcReadOutTime(unsigned at, unsigned st, unsigned stm1,
                            unsigned sizey, unsigned binx, unsigned biny,
                            unsigned skips, unsigned sweeps);
     bool waitFrame(void *frameBuffer, Pds::Archon::FrameMetaData *frameMeta);
-    //void saveDataFrame(int frameNumber);
+    void saveDataFrame(int frameNumber, bool append=false);
 
     /**
      * List of boolean states (for bi/bo records)
@@ -239,6 +241,11 @@ class ArchonCCD : public ADDriver {
     static const epicsInt32 AShutterAlwaysOpen;
     static const epicsInt32 AShutterAlwaysClosed;
 
+    /**
+     * List of file formats
+     */
+    static const epicsInt32 AFRAW;
+
     epicsEventId statusEvent;
     epicsEventId dataEvent;
     double mPollingPeriod;
@@ -247,6 +254,10 @@ class ArchonCCD : public ADDriver {
     unsigned int mAcquiringData;
     Pds::Archon::Driver *mDrv;
     epicsMutex *mDrvMutex;
+    int mCaptureBufferSize;
+    NDArray **mCaptureBufferArrays;
+    Pds::Archon::FrameMetaData *mCaptureBufferMetaData;
+    char mFullFileName[MAX_FILENAME_LEN];
     bool mStopping;
     bool mExiting;
     int mExited;

@@ -2,6 +2,23 @@ include "ADBase.template"
 include "NDFile.template"
 
 # These are the records that we modify from NDFile.template
+record(mbbo, "$(P)$(R)FileFormat")
+{
+   field(ZRST, "RAW")
+   field(ZRVL, "0")
+   field(ONST, "Invalid")
+   field(ONVL, "1")
+}
+
+# These are the records that we modify from NDFile.template
+record(mbbi, "$(P)$(R)FileFormat_RBV")
+{
+   field(ZRST, "RAW")
+   field(ZRVL, "0")
+   field(ONST, "Invalid")
+   field(ONVL, "1")
+}
+
 record(mbbo, "$(P)$(R)DataType")
 {
    field(PINI, "YES")

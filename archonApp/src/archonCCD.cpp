@@ -86,6 +86,8 @@ const epicsInt32 ArchonCCD::AShutterFullyAuto = 0;
 const epicsInt32 ArchonCCD::AShutterAlwaysOpen = 1;
 const epicsInt32 ArchonCCD::AShutterAlwaysClosed = 2;
 
+const epicsInt32 ArchonCCD::AFRAW = 0;
+
 const ArchonCCD::ArchonEnumInfo ArchonCCD::OnOffEnums[] = {
   {"Off",     ABFalse,  epicsSevNone},
   {"On",      ABTrue,   epicsSevNone},
@@ -252,6 +254,9 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
            ASYN_CANBLOCK, 1, priority, stackSize),
   mDrv(new Pds::Archon::Driver(cameraAddr, cameraPort)),
   mDrvMutex(new epicsMutex()),
+  mCaptureBufferSize(0),
+  mCaptureBufferArrays(NULL),
+  mCaptureBufferMetaData(NULL),
   mStopping(false),
   mExiting(false),
   mExited(0),
@@ -544,6 +549,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   status |= setIntegerParam(ArchonClockCt, mClockCt);
   status |= setIntegerParam(ArchonNumDummyPixels, mDummyPixelCount);
   status |= setDoubleParam (ArchonReadOutTime, readoutTime);
+  status |= setupFileWrite();
 
   callParamCallbacks();
 
@@ -605,11 +611,28 @@ ArchonCCD::~ArchonCCD()
   this->lock();
   printf("%s::%s Shutdown and disconnect...\n", driverName, functionName);
   try {
+    mDrv->timeout_waits();
+    mDrvMutex->lock();
     if (mDrv->acquisition_mode() != Pds::Archon::Stopped) {
       checkStatus(mDrv->clear_acquisition(), "Unable to stop aquisition");
     }
+    mDrvMutex->unlock();
     epicsEventSignal(dataEvent);
     delete mDrv;
+    delete mDrvMutex;
+    if (mCaptureBufferMetaData) {
+      delete[] mCaptureBufferMetaData;
+      mCaptureBufferMetaData = NULL;
+    }
+    if (mCaptureBufferArrays) {
+      for (int i=0; i<mCaptureBufferSize; i++) {
+        if (mCaptureBufferArrays[i]) {
+          mCaptureBufferArrays[i]->release();
+        }
+      }
+      delete[] mCaptureBufferArrays;
+      mCaptureBufferArrays = NULL;
+    }
   } catch (const std::string &e) {
     asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
               "%s:%s: %s\n",
@@ -734,7 +757,7 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
         }
         // Start acquisition
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                  "%s:%s:, start_acquisition()\n",
+                  "%s:%s: start_acquisition()\n",
                   driverName, functionName);
         checkStatus(mDrv->start_acquisition(numImages), "start_acquisition failed");
         // Reset the counters
@@ -753,7 +776,7 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
         mDrv->timeout_waits();
         mDrvMutex->lock();
         asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                  "%s:%s:, clear_acquisition()\n",
+                  "%s:%s: clear_acquisition()\n",
                   driverName, functionName);
         checkStatus(mDrv->clear_acquisition(), "clear_acquisition failed");
         mAcquiringData = 0;
@@ -795,6 +818,21 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
            (function == ArchonShutterPolarity)) {
     status = setupShutter(-1);
   }
+  else if ((function == NDFileWriteMode) || (function == NDFileNumCapture)) {
+    status = setupFileWrite();
+    if (status != asynSuccess) setIntegerParam(function, oldValue);
+  }
+  else if (function == NDFileCapture) {
+    if (value) {
+      status = setupFileWrite();
+      if (status != asynSuccess) setIntegerParam(function, oldValue);
+    }
+  }
+  else if (function == NDWriteFile) {
+    if (value) {
+      status = setupFileWrite(true);
+    }
+  }
   else {
     status = ADDriver::writeInt32(pasynUser, value);
   }
@@ -807,7 +845,7 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
   if (signalDataTask) {
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-        "%s:%s:, Sending dataEvent to dataTask ...\n",
+        "%s:%s: Sending dataEvent to dataTask ...\n",
         driverName, functionName);
     // Also signal the data readout thread
     epicsEventSignal(dataEvent);
@@ -903,9 +941,109 @@ asynStatus ArchonCCD::setupFramePoll(double period)
   } else {
     unsigned period_ms = (unsigned) (period*1e6);
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_frame_poll_interval(%u)\n",
+              "%s:%s: set_frame_poll_interval(%u)\n",
               driverName, functionName, period_ms);
     mDrv->set_frame_poll_interval(period_ms);
+  }
+
+  return status;
+}
+
+asynStatus ArchonCCD::setupFileWrite(bool trigger)
+{
+  int writeMode;
+  int fileCapture;
+  int fileNumCapture;
+  int fileNumCaptured;
+  int bufferSize;
+  asynStatus status=asynSuccess;
+  static const char *functionName = "setupFileWrite";
+
+  getIntegerParam(NDFileWriteMode, &writeMode);
+  getIntegerParam(NDFileCapture, &fileCapture);
+  getIntegerParam(NDFileNumCapture, &fileNumCapture);
+  getIntegerParam(NDFileNumCaptured, &fileNumCaptured);
+
+  if (trigger) {
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+              "%s:%s: capture buffer manual write triggered\n",
+              driverName, functionName);
+
+    setIntegerParam(NDFileWriteStatus, NDFileWriteOK);
+    setStringParam(NDFileWriteMessage, "manual file write requested");
+    // update parameters before writing out files
+    callParamCallbacks();
+
+    switch(writeMode) {
+      case NDFileModeSingle:
+        this->saveDataFrame(0);
+        break;
+      case NDFileModeCapture:
+        for (int i=0; i<fileNumCaptured; i++) {
+          this->saveDataFrame(i, i!=0);
+          mCaptureBufferArrays[i]->release();
+          mCaptureBufferArrays[i] = NULL;
+        }
+        fileCapture = 0;
+        fileNumCaptured = 0;
+        break;
+      case NDFileModeStream:
+        status = asynError;
+        break;
+    }
+
+    setIntegerParam(NDWriteFile, 0);
+    setIntegerParam(NDFileNumCaptured, fileNumCaptured);
+    setIntegerParam(NDFileCapture, fileCapture);
+    if (status != asynSuccess) {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+                "%s:%s: manual file write failed\n",
+                driverName, functionName);
+      setIntegerParam(NDFileWriteStatus, NDFileWriteError);
+      setStringParam(NDFileWriteMessage, "manual file write failed");
+    } else {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s: manual file write complete\n",
+                driverName, functionName);
+      setIntegerParam(NDFileWriteStatus, NDFileWriteOK);
+      setStringParam(NDFileWriteMessage, "manual file write completed");
+    }
+  } else {
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+              "%s:%s: configuring capture buffers\n",
+              driverName, functionName);
+    if (writeMode == NDFileModeCapture) {
+      bufferSize = fileNumCapture;
+    } else {
+      bufferSize = 1;
+    }
+
+    // allocate buffers if needed
+    if (bufferSize != mCaptureBufferSize) {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s: reallocating capture buffers (%d)\n",
+                driverName, functionName, bufferSize);
+      if (mCaptureBufferArrays) {
+        for (int i=0; i<mCaptureBufferSize; i++) {
+          if (mCaptureBufferArrays[i])
+            mCaptureBufferArrays[i]->release();
+        }
+        delete[] mCaptureBufferArrays;
+      }
+      if (mCaptureBufferMetaData) {
+        delete[] mCaptureBufferMetaData;
+      }
+
+      mCaptureBufferSize = bufferSize;
+      mCaptureBufferArrays = new NDArray*[mCaptureBufferSize]();
+      mCaptureBufferMetaData = new Pds::Archon::FrameMetaData[mCaptureBufferSize];
+    }
+
+    // clear num captured
+    setIntegerParam(NDFileNumCaptured, 0);
+    // clear errors
+    setIntegerParam(NDFileWriteStatus, NDFileWriteOK);
+    setStringParam(NDFileWriteMessage, " ");
   }
 
   return status;
@@ -1156,13 +1294,13 @@ asynStatus ArchonCCD::setupPowerAndBias()
         (fabs(biasSetpoint - mBiasSetpointCache) > 0.05)) {
       // need to power off to apply bias settings
       asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s:, power_off()\n",
+                "%s:%s: power_off()\n",
                 driverName, functionName);
       checkStatus(mDrv->power_off(), "Unable to power off ccd");
 
       // Set the detector bias
       asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s:, set_bias(%s, %s, %f)\n",
+                "%s:%s: set_bias(%s, %s, %f)\n",
                 driverName, functionName,
                 BiasChannelEnums[biasChan].name.c_str(),
                 biasSwitch ?  "true" : "false",
@@ -1174,7 +1312,7 @@ asynStatus ArchonCCD::setupPowerAndBias()
 
       // make sure power is really off before possibly turning it back on
       asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s:, wait_power_mode(Pds::Archon::Off, 5000)\n",
+                "%s:%s: wait_power_mode(Pds::Archon::Off, 5000)\n",
                 driverName, functionName);
       checkStatus(mDrv->wait_power_mode(Pds::Archon::Off, 5000), "Failed to power off after 5 sec");
     }
@@ -1185,12 +1323,12 @@ asynStatus ArchonCCD::setupPowerAndBias()
 
     if (powerSwitch && powerMode < Pds::Archon::Intermediate) {
       asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s:, power_on()\n",
+                "%s:%s: power_on()\n",
                 driverName, functionName);
       checkStatus(mDrv->power_on(), "Unable to power on ccd");
     } else if (!powerSwitch && powerMode > Pds::Archon::Intermediate) {
       asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s:, power_off()\n",
+                "%s:%s: power_off()\n",
                 driverName, functionName);
       checkStatus(mDrv->power_off(), "Unable to power off ccd");
     }
@@ -1311,60 +1449,60 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
   try {
     // Set the binning parameters and number of vertical lines
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_vertical_binning(%d)\n",
+              "%s:%s: set_vertical_binning(%d)\n",
               driverName, functionName, binY);
     checkStatus(mDrv->set_vertical_binning(binY), "unable to set vertical binning");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_horizontal_binning(%d)\n",
+              "%s:%s: set_horizontal_binning(%d)\n",
               driverName, functionName, binX);
     checkStatus(mDrv->set_horizontal_binning(binX-1), "unable to set horizontal binning");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_number_of_lines(%d, %d)\n",
+              "%s:%s: set_number_of_lines(%d, %d)\n",
               driverName, functionName, sizeY/binY, lineScanMode ? numBatchFrames : 0);
     checkStatus(mDrv->set_number_of_lines(sizeY/binY, lineScanMode ? (unsigned) numBatchFrames : 0U),
                 "unable to set number of lines");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_number_of_pixels(%d)\n",
+              "%s:%s: set_number_of_pixels(%d)\n",
               driverName, functionName, mPixelCount/binX);
     checkStatus(mDrv->set_number_of_pixels(mPixelCount/binX), "unable to set number of pixels");
     // Set clearing parameters
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_preframe_clear(%d)\n",
+              "%s:%s: set_preframe_clear(%d)\n",
               driverName, functionName, preframeClear);
     checkStatus(mDrv->set_preframe_clear(preframeClear), "unable to set preframe clear");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_idle_clear(%d)\n",
+              "%s:%s: set_idle_clear(%d)\n",
               driverName, functionName, idleClear);
     checkStatus(mDrv->set_idle_clear(idleClear), "unable to set idle clear");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_preframe_skip(%d)\n",
+              "%s:%s: set_preframe_skip(%d)\n",
               driverName, functionName, preframeSkip);
     checkStatus(mDrv->set_preframe_skip(preframeSkip), "unable to set preframe skip");
     // Set exposure time parameters
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_integration_time(%d)\n",
+              "%s:%s: set_integration_time(%d)\n",
               driverName, functionName, mAcquireTime);
     checkStatus(mDrv->set_integration_time(mAcquireTime), "unable to set integration time");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_non_integration_time(%d)\n",
+              "%s:%s: set_non_integration_time(%d)\n",
               driverName, functionName, mNonIntTime);
     checkStatus(mDrv->set_non_integration_time(mNonIntTime), "unable to set non-integration time");
     // Set the external trigger
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_external_trigger(%s)\n",
+              "%s:%s: set_external_trigger(%s)\n",
               driverName, functionName, triggerMode ?  "true" : "false");
     checkStatus(mDrv->set_external_trigger(triggerMode), "unable to set external trigger setting");
     // Set the clock parameters
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_clock_at(%d)\n",
+              "%s:%s: set_clock_at(%d)\n",
               driverName, functionName, clockAt);
     checkStatus(mDrv->set_clock_at(clockAt), "unable to set clock at setting");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_clock_st(%d)\n",
+              "%s:%s: set_clock_st(%d)\n",
               driverName, functionName, clockSt);
     checkStatus(mDrv->set_clock_st(clockSt), "unable to set clock st setting");
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-              "%s:%s:, set_clock_stm1(%d)\n",
+              "%s:%s: set_clock_stm1(%d)\n",
               driverName, functionName, clockStm1);
     checkStatus(mDrv->set_clock_stm1(clockStm1), "unable to set clock stm1 setting");
 
@@ -1433,7 +1571,6 @@ void ArchonCCD::dataTask(void)
 {
   Pds::Archon::AcqMode acquireStatus;
   int bitsPerPixel = 16;
-  char *errorString = NULL;
   int acquiring = 0;
   epicsInt32 imagesPerFrame;
   epicsInt32 lineScanMode;
@@ -1457,11 +1594,16 @@ void ArchonCCD::dataTask(void)
   NDArray *pArray;
   Pds::Archon::FrameMetaData frameMeta;
   int autoSave;
+  int writeMode;
+  int fileCapture;
+  int fileNumCapture;
+  int fileNumCaptured;
   int readOutMode;
   int biasChan;
   Pds::Archon::PowerMode powerMode;
   bool isgood;
   bool overheat;
+  bool writeFile = false;
   float temperature;
   float voltage;
   float current;
@@ -1473,16 +1615,13 @@ void ArchonCCD::dataTask(void)
   this->lock();
 
   while(!mExiting) {
-
-    errorString = NULL;
-
     // Wait for event from main thread to signal that data acquisition has started.
     this->unlock();
     epicsEventWait(dataEvent);
     if (mExiting)
         break;
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-      "%s:%s:, got data event\n",
+      "%s:%s: got data event\n",
       driverName, functionName);
     this->lock();
 
@@ -1494,7 +1633,6 @@ void ArchonCCD::dataTask(void)
       getIntegerParam(ArchonNumBatchFrames, &numBatchFrames);
       getIntegerParam(ArchonLineScanMode, &lineScanMode);
       getIntegerParam(NDDataType, &itemp); dataType = (NDDataType_t)itemp;
-      getIntegerParam(NDAutoSave, &autoSave);
       getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
       getIntegerParam(NDArraySizeX, &sizeX);
       getIntegerParam(NDArraySizeY, &sizeY);
@@ -1571,57 +1709,135 @@ void ArchonCCD::dataTask(void)
             this->getAttributes(pArray->pAttributeList);
             /* Call the NDArray callback */
             asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                      "%s:%s:, calling array callbacks\n",
+                      "%s:%s: calling array callbacks\n",
                       driverName, functionName);
             doCallbacksGenericPointer(pArray, NDArrayData, 0);
             // Save the current frame for use with the file writer which needs the data
-            if (this->pArrays[0]) this->pArrays[0]->release();
-            this->pArrays[0] = pArray;
-          }
-          // Periodically update temperature status
-          epicsTimeGetCurrent(&currentTempTime);
-          if (epicsTimeDiffInSeconds(&currentTempTime, &lastTempTime) > mTempPollingPeriod) {
-            // Fetch the status info from controller
-            checkStatus(mDrv->fetch_status(), "Unable to fetch status info");
-            // Read temperature of CCD
-            temperature = detStatus.backplane_temp();
-            setDoubleParam(ADTemperatureActual, temperature);
-            // Read power status of CCD
-            powerMode = detStatus.power();
-            setIntegerParam(ArchonPowerMode, powerMode);
-            // Read the power status of the controller
-            isgood = detStatus.is_power_good();
-            setIntegerParam(ArchonPowerStatus, isgood);
-            // Read the overheat status of the controller
-            overheat = detStatus.is_overheated();
-            setIntegerParam(ArchonOverheat, overheat);
-            // Read the module temps
-            for (unsigned nMod = 0; nMod < ArchonMaxModules; nMod++) {
-              setDoubleParam(ArchonModuleTemp[nMod], detStatus.module_temp(nMod+1));
+            writeFile = false;
+            getIntegerParam(NDAutoSave, &autoSave);
+            getIntegerParam(NDFileWriteMode, &writeMode);
+            getIntegerParam(NDFileCapture, &fileCapture);
+            getIntegerParam(NDFileNumCapture, &fileNumCapture);
+            getIntegerParam(NDFileNumCaptured, &fileNumCaptured);
+            switch(writeMode) {
+              case NDFileModeSingle:
+                if (mCaptureBufferArrays[0])
+                  mCaptureBufferArrays[0]->release();
+                // add array to capture buffer and increase ref count
+                pArray->reserve();
+                mCaptureBufferArrays[0] = pArray;
+                mCaptureBufferMetaData[0] = frameMeta;
+                fileNumCaptured = 1;
+                if (autoSave) writeFile = true;
+                break;
+              case NDFileModeCapture:
+                if (fileCapture && (fileNumCaptured < fileNumCapture)) {
+                  if (mCaptureBufferArrays[fileNumCaptured])
+                    mCaptureBufferArrays[fileNumCaptured]->release();
+                  // add array to capture buffer and increase ref count
+                  pArray->reserve();
+                  mCaptureBufferArrays[fileNumCaptured] = pArray;
+                  mCaptureBufferMetaData[fileNumCaptured] = frameMeta;
+                  fileNumCaptured++;
+                  if (fileNumCaptured == fileNumCapture) {
+                    fileCapture = 0;
+                    if (autoSave) writeFile = true;
+                  }
+                }
+                break;
+              case NDFileModeStream:
+                if (fileCapture && (fileNumCaptured < fileNumCapture)) {
+                  if (mCaptureBufferArrays[0])
+                    mCaptureBufferArrays[0]->release();
+                  pArray->reserve();
+                  mCaptureBufferArrays[0] = pArray;
+                  mCaptureBufferMetaData[0] = frameMeta;
+                  fileNumCaptured++;
+                  if (fileNumCaptured == fileNumCapture) {
+                    fileCapture = 0;
+                  }
+                  writeFile = true;
+                }
+                break;
             }
-            // Read bias voltage and current
-            getIntegerParam(ArchonBiasChan, &biasChan);
-            checkStatus(mDrv->get_bias(biasChan, &voltage, &current),
-                        "Unable to get bias voltage and current");
-            setDoubleParam(ArchonBiasVoltage, voltage);
-            setDoubleParam(ArchonBiasCurrent, current);
+            setIntegerParam(NDFileNumCaptured, fileNumCaptured);
+            setIntegerParam(NDFileCapture, fileCapture);
 
-            // update last temp update time
-            lastTempTime = currentTempTime;
+            // release the array since capture buffer/callbacks increased the ref count if needed
+            pArray->release();
+
+            // finally run the param callbacks
+            callParamCallbacks();
+
+            // check if file needs to be written out
+            if (writeFile) {
+              switch(writeMode) {
+                case NDFileModeSingle:
+                  this->saveDataFrame(0);
+                  break;
+                case NDFileModeCapture:
+                  for (int i=0; i<fileNumCapture; i++) {
+                    this->saveDataFrame(i, i!=0);
+                    mCaptureBufferArrays[i]->release();
+                    mCaptureBufferArrays[i] = NULL;
+                  }
+                  fileNumCaptured = 0;
+                  setIntegerParam(NDFileNumCaptured, fileNumCaptured);
+                  break;
+                case NDFileModeStream:
+                  this->saveDataFrame(0, fileNumCaptured>1);
+                  break;
+              }
+
+              // update changes from file writing
+              callParamCallbacks();
+            }
+          } else {
+            // if no array callbacks then just do normal ones
+            callParamCallbacks();
           }
-          // Save data if autosave is enabled
-          //if (autoSave) this->saveDataFrame(i);
+        }
+
+        // Periodically update temperature status
+        epicsTimeGetCurrent(&currentTempTime);
+        if (epicsTimeDiffInSeconds(&currentTempTime, &lastTempTime) > mTempPollingPeriod) {
+          // Fetch the status info from controller
+          checkStatus(mDrv->fetch_status(), "Unable to fetch status info");
+          // Read temperature of CCD
+          temperature = detStatus.backplane_temp();
+          setDoubleParam(ADTemperatureActual, temperature);
+          // Read power status of CCD
+          powerMode = detStatus.power();
+          setIntegerParam(ArchonPowerMode, powerMode);
+          // Read the power status of the controller
+          isgood = detStatus.is_power_good();
+          setIntegerParam(ArchonPowerStatus, isgood);
+          // Read the overheat status of the controller
+          overheat = detStatus.is_overheated();
+          setIntegerParam(ArchonOverheat, overheat);
+          // Read the module temps
+          for (unsigned nMod = 0; nMod < ArchonMaxModules; nMod++) {
+            setDoubleParam(ArchonModuleTemp[nMod], detStatus.module_temp(nMod+1));
+          }
+          // Read bias voltage and current
+          getIntegerParam(ArchonBiasChan, &biasChan);
+          checkStatus(mDrv->get_bias(biasChan, &voltage, &current),
+                      "Unable to get bias voltage and current");
+          setDoubleParam(ArchonBiasVoltage, voltage);
+          setDoubleParam(ArchonBiasCurrent, current);
+
+          // update last temp update time
+          lastTempTime = currentTempTime;
+
           // finally run the param callbacks
           callParamCallbacks();
         }
-
       } catch (const std::string &e) {
         if ((!mExiting) && (!mStopping)) {
           asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
                     "%s:%s: %s\n",
                     driverName, functionName, e.c_str());
-          errorString = const_cast<char *>(e.c_str());
-          setStringParam(ArchonMessage, errorString);
+          setStringParam(ArchonMessage, e);
         }
       }
     }
@@ -1642,6 +1858,83 @@ void ArchonCCD::dataTask(void)
   } // End of loop
   mExited++;
   this->unlock();
+}
+
+
+void ArchonCCD::saveDataFrame(int frameNumber, bool append)
+{
+  NDArray *pArray = NULL;
+  Pds::Archon::FrameMetaData *frameMeta = NULL;
+  NDArrayInfo arrayInfo;
+  FILE *fp = NULL;
+  int fileFormat;
+  static const char *functionName = "saveDataFrame";
+
+  if (frameNumber < mCaptureBufferSize) {
+    pArray = mCaptureBufferArrays[frameNumber];
+    frameMeta = &mCaptureBufferMetaData[frameNumber];
+  }
+
+  // check if the capture buffer has any data
+  if (!pArray || !frameMeta) {
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s::%s no capture buffer present\n",
+              driverName, functionName);
+    setStringParam(NDFileWriteMessage, "no capture buffer present");
+    setIntegerParam(NDFileWriteStatus, NDFileWriteError);
+    return;
+  }
+  pArray->getInfo(&arrayInfo);
+
+  // Fetch the file format
+  getIntegerParam(NDFileFormat, &fileFormat);
+
+  if (!append) {
+    this->createFileName(255, mFullFileName);
+    setStringParam(NDFullFileName, mFullFileName);
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+              "%s:%s: file name is %s.\n",
+              driverName, functionName, mFullFileName);
+  }
+
+  try {
+    if (fileFormat == AFRAW) {
+      // Open the file
+      fp = fopen(mFullFileName, append ? "ab" : "wb");
+      if (!fp) {
+        asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+                  "%s::%s unable to open file %s error=%s\n",
+                  driverName, functionName, mFullFileName, strerror(errno));
+        setStringParam(NDFileWriteMessage, "unable to open file");
+        setIntegerParam(NDFileWriteStatus, NDFileWriteError);
+        return;
+      }
+
+      // Write the header to the file
+      checkStatus(fwrite(frameMeta, sizeof(*frameMeta), 1, fp) == 1,
+                  "unable to write file header");
+
+      // Write the data to the file
+      checkStatus(fwrite(pArray->pData, arrayInfo.totalBytes, 1, fp) == 1,
+                  "unagle to write file data");
+
+      // Close the file
+      fclose(fp);
+
+      // clear errors on succesful write
+      setStringParam(NDFileWriteMessage, " ");
+      setIntegerParam(NDFileWriteStatus, NDFileWriteOK);
+    }
+
+
+  } catch (const std::string &e) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: %s\n",
+              driverName, functionName, e.c_str());
+    if (fp) fclose(fp);
+    setStringParam(NDFileWriteMessage, e);
+    setIntegerParam(NDFileWriteStatus, NDFileWriteError);
+  }
 }
 
 #undef MAX_ENUM_STRING_SIZE
