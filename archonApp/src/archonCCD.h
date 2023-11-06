@@ -166,11 +166,11 @@ class ArchonCCD : public ADDriver {
     asynStatus setupPowerAndBias();
     asynStatus setupFramePoll(double period);
     asynStatus setupFileWrite(bool trigger=false);
-    double calcReadOutTime(unsigned at, unsigned st, unsigned stm1,
-                           unsigned sizey, unsigned binx, unsigned biny,
-                           unsigned skips, unsigned sweeps);
+    epicsUInt64 calcReadOutTime(epicsUInt64 at, epicsUInt64 st, epicsUInt64 stm1,
+                                epicsUInt64 sizey, epicsUInt64 binx, epicsUInt64 biny,
+                                epicsUInt64 skips, epicsUInt64 sweeps);
     bool waitFrame(void *frameBuffer, Pds::Archon::FrameMetaData *frameMeta);
-    void saveDataFrame(int frameNumber, bool append=false);
+    bool saveDataFrame(int frameNumber, bool append=false);
 
     /**
      * List of boolean states (for bi/bo records)
@@ -246,6 +246,9 @@ class ArchonCCD : public ADDriver {
      */
     static const epicsInt32 AFRAW;
 
+    // seconds per timing core clock
+    static const epicsFloat64 SECS_PER_CLOCK;
+
     epicsEventId statusEvent;
     epicsEventId dataEvent;
     double mPollingPeriod;
@@ -274,6 +277,8 @@ class ArchonCCD : public ADDriver {
     // readout time constants
     unsigned mDummyPixelCount;
     unsigned mClockCt;
+    // readout time in clock ticks
+    epicsUInt64 mReadOutTime;
 
     // last set bias value cache
     bool mBiasCache;
