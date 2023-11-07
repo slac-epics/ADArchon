@@ -5,7 +5,7 @@ include $(TOP)/configure/CONFIG
 
 LIBRARY_IOC_WIN32 += archonCCD
 LIBRARY_IOC_Linux += archonCCD
-LIB_SRCS += archonCCD.cpp
+LIB_SRCS += archonCCD.cpp camera_ts.cpp
 LIB_LIBS_WIN32 += archon
 
 DBD += archonCCDSupport.dbd

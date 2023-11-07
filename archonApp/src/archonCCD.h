@@ -248,6 +248,7 @@ class ArchonCCD : public ADDriver {
 
     // seconds per timing core clock
     static const epicsFloat64 SECS_PER_CLOCK;
+    static const epicsUInt64 CLOCK_PER_MSEC;
 
     epicsEventId statusEvent;
     epicsEventId dataEvent;

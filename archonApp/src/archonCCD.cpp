@@ -89,6 +89,7 @@ const epicsInt32 ArchonCCD::AShutterAlwaysClosed = 2;
 const epicsInt32 ArchonCCD::AFRAW = 0;
 
 const epicsFloat64 ArchonCCD::SECS_PER_CLOCK = 10.e-9;
+const epicsUInt64 ArchonCCD::CLOCK_PER_MSEC = 100000;
 
 const ArchonCCD::ArchonEnumInfo ArchonCCD::OnOffEnums[] = {
   {"Off",     ABFalse,  epicsSevNone},
@@ -1372,6 +1373,8 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
   unsigned sampleMode;
   unsigned frameSize;
   unsigned bitsPerPixel;
+  unsigned minCycleTime;
+  unsigned waitTime;
   static const char *functionName = "setupAcquisition";
 
   if (!mInitOK) {
@@ -1539,6 +1542,15 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
     mReadOutTime = calcReadOutTime(clockAt, clockSt, clockStm1, sizeY, binX, binY, preframeSkip, preframeClear);
     setDoubleParam(ArchonReadOutTime, mReadOutTime * SECS_PER_CLOCK);
 
+    // calculate the wait time needed after each frame to get the desired internal trigger acquisition period
+    minCycleTime = mAcquireTime + mNonIntTime + (mReadOutTime / CLOCK_PER_MSEC);
+    waitTime = minCycleTime > mAcquirePeriod ? 0 : mAcquirePeriod - minCycleTime;
+    // Set waiting time parameter
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+              "%s:%s: set_waiting_time(%d)\n",
+              driverName, functionName, waitTime);
+    checkStatus(mDrv->set_waiting_time(waitTime), "unable to set waiting time");
+
     setIntegerParam(NDArraySizeX, sizeX);
     setIntegerParam(NDArraySizeY, sizeY);
     setIntegerParam(NDDataType, sampleMode ? NDUInt32 : NDUInt16);
@@ -1614,6 +1626,8 @@ void ArchonCCD::dataTask(void)
   float temperature;
   float voltage;
   float current;
+  // special global variable for timestampfifo
+  extern double camera_ts;
   const Pds::Archon::Status& detStatus = mDrv->status();
   static const char *functionName = "dataTask";
 
@@ -1722,6 +1736,8 @@ void ArchonCCD::dataTask(void)
             /* Put the frame number and time stamp into the buffer */
             pArray->uniqueId = imageCounter;
             pArray->timeStamp = startTime.secPastEpoch + startTime.nsec / 1.e9;
+            // set the timestampfifo camera_ts var before calling updateTimeStamp
+            camera_ts = frameMeta.timestamp * SECS_PER_CLOCK;
             updateTimeStamp(&pArray->epicsTS);
             pArray->uniqueId = pArray->epicsTS.nsec & 0x1FFFF; // SLAC
 #ifdef NDBitsPerPixelString
