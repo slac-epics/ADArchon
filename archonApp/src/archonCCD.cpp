@@ -1731,7 +1731,9 @@ void ArchonCCD::dataTask(void)
             }
             // set the pImage pointer to the correct offset in the frame
             pImage = ((epicsUInt8*) mFrameBuffer) + (sizeImage * i);
-            pArray = this->pNDArrayPool->alloc(nDims, dims, dataType, 0, pImage);
+            pArray = this->pNDArrayPool->alloc(nDims, dims, dataType, 0, NULL);
+            // copy the data into the ndarray
+            memcpy(pArray->pData, pImage, sizeImage);
             setIntegerParam(NDArraySize, sizeImage);
             /* Put the frame number and time stamp into the buffer */
             pArray->uniqueId = imageCounter;
