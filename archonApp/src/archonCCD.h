@@ -28,6 +28,8 @@
 #define ArchonPowerModeString         "ARCHON_POWER_MODE"
 #define ArchonPowerSwitchString       "ARCHON_POWER_SWITCH"
 #define ArchonReadOutModeString       "ARCHON_READOUT_MODE"
+#define ArchonBatchDelayString        "ARCHON_BATCH_DELAY"
+#define ArchonMinBatchPeriodString    "ARCHON_MIN_BATCH_PERIOD"
 #define ArchonNumBatchFramesString    "ARCHON_NUM_BATCH_FRAMES"
 #define ArchonLineScanModeString      "ARCHON_LINESCAN_MODE"
 #define ArchonPreFrameClearString     "ARCHON_PREFRAME_CLEAR"
@@ -39,6 +41,7 @@
 #define ArchonClockStm1String         "ARCHON_CLOCK_STM1"
 #define ArchonClockCtString           "ARCHON_CLOCK_CT"
 #define ArchonNumDummyPixelsString    "ARCHON_NUM_DUMMY_PIXELS"
+#define ArchonClearTimeString         "ARCHON_CLEAR_TIME"
 #define ArchonReadOutTimeString       "ARCHON_READOUT_TIME"
 #define ArchonBiasChanString          "ARCHON_BIAS_CHAN"
 #define ArchonBiasSetpointString      "ARCHON_BIAS_SETPOINT"
@@ -131,6 +134,8 @@ class ArchonCCD : public ADDriver {
     int ArchonPowerMode;
     int ArchonPowerSwitch;
     int ArchonReadOutMode;
+    int ArchonBatchDelay;
+    int ArchonMinBatchPeriod;
     int ArchonNumBatchFrames;
     int ArchonLineScanMode;
     int ArchonPreFrameClear;
@@ -142,6 +147,7 @@ class ArchonCCD : public ADDriver {
     int ArchonClockStm1;
     int ArchonClockCt;
     int ArchonNumDummyPixels;
+    int ArchonClearTime;
     int ArchonReadOutTime;
     int ArchonBiasChan;
     int ArchonBiasSetpoint;
@@ -166,11 +172,22 @@ class ArchonCCD : public ADDriver {
     asynStatus setupPowerAndBias();
     asynStatus setupFramePoll(double period);
     asynStatus setupFileWrite(bool trigger=false);
-    epicsUInt64 calcReadOutTime(epicsUInt64 at, epicsUInt64 st, epicsUInt64 stm1,
-                                epicsUInt64 sizey, epicsUInt64 binx, epicsUInt64 biny,
-                                epicsUInt64 skips, epicsUInt64 sweeps);
+    epicsUInt64 calcClearTime(epicsUInt64 at,
+                              epicsUInt64 st,
+                              epicsUInt64 stm1,
+                              epicsUInt64 skips,
+                              epicsUInt64 sweeps);
+    epicsUInt64 calcReadOutTime(epicsUInt64 at,
+                                epicsUInt64 st,
+                                epicsUInt64 stm1,
+                                epicsUInt64 sizey,
+                                epicsUInt64 binx,
+                                epicsUInt64 biny);
     bool waitFrame(void *frameBuffer, Pds::Archon::FrameMetaData *frameMeta);
     bool saveDataFrame(int frameNumber, bool append=false);
+
+    static unsigned archonTimeConvert(double time_in_sec);
+    static epicsUInt64 archonClockConvert(double time_in_sec);
 
     /**
      * List of boolean states (for bi/bo records)
@@ -278,8 +295,10 @@ class ArchonCCD : public ADDriver {
     // readout time constants
     unsigned mDummyPixelCount;
     unsigned mClockCt;
-    // readout time in clock ticks
+    // clear and readout time in clock ticks
+    epicsUInt64 mClearTime;
     epicsUInt64 mReadOutTime;
+    epicsUInt64 mMinBatchPeriod;
 
     // last set bias value cache
     bool mBiasCache;

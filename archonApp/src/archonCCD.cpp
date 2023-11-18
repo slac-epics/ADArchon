@@ -219,7 +219,7 @@ const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnumsSpecial[] = {
 
 const size_t ArchonCCD::ArchonEnumsSpecialSize = sizeofArray(ArchonCCD::ArchonEnumsSpecial);
 
-static unsigned archonTimeConvert(double time_in_sec)
+unsigned ArchonCCD::archonTimeConvert(double time_in_sec)
 {
   unsigned time_in_ms = 0;
   if (time_in_sec > 0.0) {
@@ -227,6 +227,16 @@ static unsigned archonTimeConvert(double time_in_sec)
   }
 
   return time_in_ms;
+}
+
+epicsUInt64 ArchonCCD::archonClockConvert(double time_in_sec)
+{
+  epicsUInt64 clocks = 0;
+  if (time_in_sec > 0.0) {
+    clocks = (epicsUInt64) (time_in_sec / SECS_PER_CLOCK);
+  }
+
+  return clocks;
 }
 
 static void archonStatusTaskC(void *drvPvt)
@@ -329,6 +339,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonPowerModeString,        asynParamInt32,   &ArchonPowerMode);
   createParam(ArchonPowerSwitchString,      asynParamInt32,   &ArchonPowerSwitch);
   createParam(ArchonReadOutModeString,      asynParamInt32,   &ArchonReadOutMode);
+  createParam(ArchonBatchDelayString,       asynParamFloat64, &ArchonBatchDelay);
+  createParam(ArchonMinBatchPeriodString,   asynParamFloat64, &ArchonMinBatchPeriod);
   createParam(ArchonNumBatchFramesString,   asynParamInt32,   &ArchonNumBatchFrames);
   createParam(ArchonLineScanModeString,     asynParamInt32,   &ArchonLineScanMode);
   createParam(ArchonPreFrameClearString,    asynParamInt32,   &ArchonPreFrameClear);
@@ -340,6 +352,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonClockStm1String,        asynParamInt32,   &ArchonClockStm1);
   createParam(ArchonClockCtString,          asynParamInt32,   &ArchonClockCt);
   createParam(ArchonNumDummyPixelsString,   asynParamInt32,   &ArchonNumDummyPixels);
+  createParam(ArchonClearTimeString,        asynParamFloat64, &ArchonClearTime);
   createParam(ArchonReadOutTimeString,      asynParamFloat64, &ArchonReadOutTime);
   createParam(ArchonBiasChanString,         asynParamInt32,   &ArchonBiasChan);
   createParam(ArchonBiasSetpointString,     asynParamFloat64, &ArchonBiasSetpoint);
@@ -428,7 +441,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
     // Get readout constants from configuration
     mClockCt = strtoul(config.constant("CT").c_str(), NULL, 0);
     mDummyPixelCount = strtoul(config.constant("DPIXELS").c_str(), NULL, 0);
-    mReadOutTime = calcReadOutTime(clkat, clkst, clkstm1, sizeY, binX, binY, preframeSkip, preframeClear);
+    mClearTime = calcClearTime(clkat, clkst, clkstm1, preframeSkip, preframeClear);
+    mReadOutTime = calcReadOutTime(clkat, clkst, clkstm1, sizeY, binX, binY);
 
 
     // Get the current temperature
@@ -531,6 +545,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   status |= setIntegerParam(ArchonReadOutMode, ARImage);
   status |= setIntegerParam(ArchonBackplaneType, backplaneType);
   status |= setIntegerParam(ArchonBackplaneRev, backplaneRev);
+  status |= setDoubleParam (ArchonBatchDelay, 0.001);
+  status |= setDoubleParam (ArchonMinBatchPeriod, 1./120.);
   status |= setIntegerParam(ArchonNumBatchFrames, batch);
   status |= setIntegerParam(ArchonLineScanMode, lineScanMode);
   status |= setIntegerParam(ArchonPreFrameClear, preframeClear);
@@ -550,6 +566,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   status |= setIntegerParam(ArchonShutterPolarity, shutterPolarity);
   status |= setIntegerParam(ArchonClockCt, mClockCt);
   status |= setIntegerParam(ArchonNumDummyPixels, mDummyPixelCount);
+  status |= setDoubleParam (ArchonClearTime, mClearTime * SECS_PER_CLOCK);
   status |= setDoubleParam (ArchonReadOutTime, mReadOutTime * SECS_PER_CLOCK);
   status |= setupFileWrite();
 
@@ -905,6 +922,9 @@ asynStatus ArchonCCD::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
     status = setupPowerAndBias();
     if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
+  else if (function == ArchonMinBatchPeriod) {
+    mMinBatchPeriod = archonClockConvert(value);
+  }
   else if (function == ArchonFramePollPeriod) {
     status = setupFramePoll(value);
     if (status != asynSuccess) setIntegerParam(function, oldValue);
@@ -1178,18 +1198,34 @@ void ArchonCCD::statusTask(void)
   mExited++;
 }
 
-epicsUInt64 ArchonCCD::calcReadOutTime(epicsUInt64 at, epicsUInt64 st, epicsUInt64 stm1,
-                                       epicsUInt64 sizeY, epicsUInt64 binX, epicsUInt64 binY,
-                                       epicsUInt64 skips, epicsUInt64 sweeps)
+epicsUInt64 ArchonCCD::calcClearTime(epicsUInt64 at,
+                                     epicsUInt64 st,
+                                     epicsUInt64 stm1,
+                                     epicsUInt64 skips,
+                                     epicsUInt64 sweeps)
+{
+  epicsUInt64 vshift = 6 * at;
+  epicsUInt64 hshift = 5 * st + stm1;
+  epicsUInt64 skipline = 2 * st + mClockCt + vshift + mPixelCount * hshift;
+  epicsUInt64 sweep = 2 * st + mClockCt + mLineCount * vshift + mPixelCount * hshift;
+  epicsUInt64 nclocks = skipline * skips + sweep * sweeps;
+
+  return nclocks;
+}
+
+epicsUInt64 ArchonCCD::calcReadOutTime(epicsUInt64 at,
+                                       epicsUInt64 st,
+                                       epicsUInt64 stm1,
+                                       epicsUInt64 sizeY,
+                                       epicsUInt64 binX,
+                                       epicsUInt64 binY)
 {
   static const epicsUInt64 pixelclk = 330;
   epicsUInt64 vshift = 6 * at;
   epicsUInt64 hshift = 5 * st + stm1;
   epicsUInt64 pixel = pixelclk + (binX - 1) * hshift;
   epicsUInt64 line = 2 * st + mClockCt + vshift * binY + pixelclk * (mDummyPixelCount + 1) + mPixelCount/binX * pixel;
-  epicsUInt64 skipline = 2 * st + mClockCt + vshift + mPixelCount * hshift;
-  epicsUInt64 sweep = 2 * st + mClockCt + mLineCount * vshift + mPixelCount * hshift;
-  epicsUInt64 nclocks = skipline * skips + sweep * sweeps + line * sizeY;
+  epicsUInt64 nclocks = line * sizeY;
 
   return nclocks;
 }
@@ -1538,12 +1574,15 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
       frameSize /= numBatchFrames;
     }
 
+    // calculate the image pre-frame clearing time
+    mClearTime = calcClearTime(clockAt, clockSt, clockStm1, preframeSkip, preframeClear);
+    setDoubleParam(ArchonClearTime, mClearTime * SECS_PER_CLOCK);
     // calculate the image readout time
-    mReadOutTime = calcReadOutTime(clockAt, clockSt, clockStm1, sizeY, binX, binY, preframeSkip, preframeClear);
+    mReadOutTime = calcReadOutTime(clockAt, clockSt, clockStm1, sizeY, binX, binY);
     setDoubleParam(ArchonReadOutTime, mReadOutTime * SECS_PER_CLOCK);
 
     // calculate the wait time needed after each frame to get the desired internal trigger acquisition period
-    minCycleTime = mAcquireTime + mNonIntTime + (mReadOutTime / CLOCK_PER_MSEC);
+    minCycleTime = mAcquireTime + mNonIntTime + ((mClearTime + mReadOutTime) / CLOCK_PER_MSEC);
     waitTime = minCycleTime > mAcquirePeriod ? 0 : mAcquirePeriod - minCycleTime;
     // Set waiting time parameter
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
@@ -1600,13 +1639,13 @@ void ArchonCCD::dataTask(void)
   epicsInt32 sizeX, sizeY;
   epicsInt32 sizeImage = 0;
   epicsUInt64 timestampDelta = 0;
+  epicsFloat64 batchDelay = 0.0;
   int adShutterMode;
   NDDataType_t dataType;
   int itemp;
   size_t dims[2];
   int nDims = 2;
   int i;
-  epicsTimeStamp startTime;
   epicsTimeStamp currentTempTime;
   epicsTimeStamp lastTempTime;
   epicsUInt8 *pImage;
@@ -1651,6 +1690,7 @@ void ArchonCCD::dataTask(void)
       // Read some parameters
       getIntegerParam(ADShutterMode, &adShutterMode);
       getIntegerParam(ArchonReadOutMode, &readOutMode);
+      getDoubleParam (ArchonBatchDelay, &batchDelay);
       getIntegerParam(ArchonNumBatchFrames, &numBatchFrames);
       getIntegerParam(ArchonLineScanMode, &lineScanMode);
       getIntegerParam(NDDataType, &itemp); dataType = (NDDataType_t)itemp;
@@ -1694,6 +1734,10 @@ void ArchonCCD::dataTask(void)
           frameMeta.size /= imagesPerFrame;
           // calculate approximate timestamp delta between each batched frame
           timestampDelta = (frameMeta.fetch - frameMeta.timestamp - mReadOutTime) / (imagesPerFrame-1);
+          // use the minbatchperiod to correct the timestampDelta to remove contribution from long fetch delays
+          if (mMinBatchPeriod > 0) {
+            timestampDelta = (timestampDelta + (mMinBatchPeriod / 10)) - (timestampDelta + (mMinBatchPeriod / 10)) % mMinBatchPeriod;
+          }
         }
         // process all the images included in the frame
         for (i=0;i<imagesPerFrame;i++) {
@@ -1704,136 +1748,132 @@ void ArchonCCD::dataTask(void)
           getIntegerParam(ADNumImagesCounter, &numImagesCounter);
           numImagesCounter++;
           setIntegerParam(ADNumImagesCounter, numImagesCounter);
+          // Allocate an NDArray
+          dims[0] = sizeX;
+          dims[1] = sizeY;
+          if (dataType == NDUInt32) {
+            sizeImage = sizeX * sizeY * sizeof(epicsUInt32);
+            bitsPerPixel = 32;
+          } else if (dataType == NDUInt16) {
+            sizeImage = sizeX * sizeY * sizeof(epicsUInt16);
+            bitsPerPixel = 16;
+          } else {
+            asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+                      "%s:%s: invalid array data type %d\n",
+                      driverName, functionName, dataType);
+            continue;
+          }
+          // patch the frame metadata when dealing with batched frames
+          if (imagesPerFrame>1) {
+            // set the batch field to indicate the number it is in the batch
+            frameMeta.batch = i;
+            // modify the timestamp to approximate the frame start time
+            frameMeta.timestamp += (i>0 ? timestampDelta : 0);
+          }
+          // set the pImage pointer to the correct offset in the frame
+          pImage = ((epicsUInt8*) mFrameBuffer) + (sizeImage * i);
+          pArray = this->pNDArrayPool->alloc(nDims, dims, dataType, 0, NULL);
+          // copy the data into the ndarray
+          memcpy(pArray->pData, pImage, sizeImage);
+          setIntegerParam(NDArraySize, sizeImage);
+          // set the timestampfifo camera_ts var before calling updateTimeStamp
+          camera_ts = frameMeta.timestamp * SECS_PER_CLOCK;
+          pArray->timeStamp = camera_ts;
+          updateTimeStamp(&pArray->epicsTS);
+          pArray->uniqueId = pArray->epicsTS.nsec & 0x1FFFF; // SLAC
+#ifdef NDBitsPerPixelString
+          setIntegerParam(NDBitsPerPixel, bitsPerPixel);
+#endif
+          /* Get any attributes that have been defined for this driver */
+          this->getAttributes(pArray->pAttributeList);
+          /* Call the NDArray callback */
+          asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                    "%s:%s: calling array callbacks\n",
+                    driverName, functionName);
           // If array callbacks are enabled then read data into NDArray, do callbacks
           if (arrayCallbacks) {
-            epicsTimeGetCurrent(&startTime);
-            // Allocate an NDArray
-            dims[0] = sizeX;
-            dims[1] = sizeY;
-            if (dataType == NDUInt32) {
-              sizeImage = sizeX * sizeY * sizeof(epicsUInt32);
-              bitsPerPixel = 32;
-            } else if (dataType == NDUInt16) {
-              sizeImage = sizeX * sizeY * sizeof(epicsUInt16);
-              bitsPerPixel = 16;
-            } else {
-              asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
-                        "%s:%s: invalid array data type %d\n",
-                        driverName, functionName, dataType);
-              continue;
-            }
-            // patch the frame metadata when dealing with batched frames
-            if (imagesPerFrame>1) {
-              // set the batch field to indicate the number it is in the batch
-              frameMeta.batch = i;
-              // modify the timestamp to approximate the frame start time
-              frameMeta.timestamp += timestampDelta * i;
-            }
-            // set the pImage pointer to the correct offset in the frame
-            pImage = ((epicsUInt8*) mFrameBuffer) + (sizeImage * i);
-            pArray = this->pNDArrayPool->alloc(nDims, dims, dataType, 0, NULL);
-            // copy the data into the ndarray
-            memcpy(pArray->pData, pImage, sizeImage);
-            setIntegerParam(NDArraySize, sizeImage);
-            /* Put the frame number and time stamp into the buffer */
-            pArray->uniqueId = imageCounter;
-            pArray->timeStamp = startTime.secPastEpoch + startTime.nsec / 1.e9;
-            // set the timestampfifo camera_ts var before calling updateTimeStamp
-            camera_ts = frameMeta.timestamp * SECS_PER_CLOCK;
-            updateTimeStamp(&pArray->epicsTS);
-            pArray->uniqueId = pArray->epicsTS.nsec & 0x1FFFF; // SLAC
-#ifdef NDBitsPerPixelString
-            setIntegerParam(NDBitsPerPixel, bitsPerPixel);
-#endif
-            /* Get any attributes that have been defined for this driver */
-            this->getAttributes(pArray->pAttributeList);
-            /* Call the NDArray callback */
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                      "%s:%s: calling array callbacks\n",
-                      driverName, functionName);
             doCallbacksGenericPointer(pArray, NDArrayData, 0);
-            // Save the current frame for use with the file writer which needs the data
-            writeFile = false;
-            getIntegerParam(NDAutoSave, &autoSave);
-            getIntegerParam(NDFileWriteMode, &writeMode);
-            getIntegerParam(NDFileCapture, &fileCapture);
-            getIntegerParam(NDFileNumCapture, &fileNumCapture);
-            getIntegerParam(NDFileNumCaptured, &fileNumCaptured);
-            switch(writeMode) {
-              case NDFileModeSingle:
+            if ((imagesPerFrame > 1) && (batchDelay > 0.0)) {
+              epicsThreadSleep(batchDelay);
+            }
+          }
+          // Save the current frame for use with the file writer which needs the data
+          writeFile = false;
+          getIntegerParam(NDAutoSave, &autoSave);
+          getIntegerParam(NDFileWriteMode, &writeMode);
+          getIntegerParam(NDFileCapture, &fileCapture);
+          getIntegerParam(NDFileNumCapture, &fileNumCapture);
+          getIntegerParam(NDFileNumCaptured, &fileNumCaptured);
+          switch(writeMode) {
+            case NDFileModeSingle:
+              if (mCaptureBufferArrays[0])
+                mCaptureBufferArrays[0]->release();
+              // add array to capture buffer and increase ref count
+              pArray->reserve();
+              mCaptureBufferArrays[0] = pArray;
+              mCaptureBufferMetaData[0] = frameMeta;
+              fileNumCaptured = 1;
+              if (autoSave) writeFile = true;
+              break;
+            case NDFileModeCapture:
+              if (fileCapture && (fileNumCaptured < fileNumCapture)) {
+                if (mCaptureBufferArrays[fileNumCaptured])
+                  mCaptureBufferArrays[fileNumCaptured]->release();
+                // add array to capture buffer and increase ref count
+                pArray->reserve();
+                mCaptureBufferArrays[fileNumCaptured] = pArray;
+                mCaptureBufferMetaData[fileNumCaptured] = frameMeta;
+                fileNumCaptured++;
+                if (fileNumCaptured == fileNumCapture) {
+                  fileCapture = 0;
+                  if (autoSave) writeFile = true;
+                }
+              }
+              break;
+            case NDFileModeStream:
+              if (fileCapture && (fileNumCaptured < fileNumCapture)) {
                 if (mCaptureBufferArrays[0])
                   mCaptureBufferArrays[0]->release();
-                // add array to capture buffer and increase ref count
                 pArray->reserve();
                 mCaptureBufferArrays[0] = pArray;
                 mCaptureBufferMetaData[0] = frameMeta;
-                fileNumCaptured = 1;
-                if (autoSave) writeFile = true;
+                fileNumCaptured++;
+                if (fileNumCaptured == fileNumCapture) {
+                  fileCapture = 0;
+                }
+                writeFile = true;
+              }
+              break;
+          }
+          setIntegerParam(NDFileNumCaptured, fileNumCaptured);
+          setIntegerParam(NDFileCapture, fileCapture);
+
+          // finally run the param callbacks
+          callParamCallbacks();
+          // release the array since capture buffer/callbacks increased the ref count if needed
+          pArray->release();
+
+          // check if file needs to be written out
+          if (writeFile) {
+            switch(writeMode) {
+              case NDFileModeSingle:
+                this->saveDataFrame(0);
                 break;
               case NDFileModeCapture:
-                if (fileCapture && (fileNumCaptured < fileNumCapture)) {
-                  if (mCaptureBufferArrays[fileNumCaptured])
-                    mCaptureBufferArrays[fileNumCaptured]->release();
-                  // add array to capture buffer and increase ref count
-                  pArray->reserve();
-                  mCaptureBufferArrays[fileNumCaptured] = pArray;
-                  mCaptureBufferMetaData[fileNumCaptured] = frameMeta;
-                  fileNumCaptured++;
-                  if (fileNumCaptured == fileNumCapture) {
-                    fileCapture = 0;
-                    if (autoSave) writeFile = true;
-                  }
+                for (int i=0; i<fileNumCapture; i++) {
+                  this->saveDataFrame(i, i!=0);
+                  mCaptureBufferArrays[i]->release();
+                  mCaptureBufferArrays[i] = NULL;
                 }
+                fileNumCaptured = 0;
+                setIntegerParam(NDFileNumCaptured, fileNumCaptured);
                 break;
               case NDFileModeStream:
-                if (fileCapture && (fileNumCaptured < fileNumCapture)) {
-                  if (mCaptureBufferArrays[0])
-                    mCaptureBufferArrays[0]->release();
-                  pArray->reserve();
-                  mCaptureBufferArrays[0] = pArray;
-                  mCaptureBufferMetaData[0] = frameMeta;
-                  fileNumCaptured++;
-                  if (fileNumCaptured == fileNumCapture) {
-                    fileCapture = 0;
-                  }
-                  writeFile = true;
-                }
+                this->saveDataFrame(0, fileNumCaptured>1);
                 break;
             }
-            setIntegerParam(NDFileNumCaptured, fileNumCaptured);
-            setIntegerParam(NDFileCapture, fileCapture);
 
-            // release the array since capture buffer/callbacks increased the ref count if needed
-            pArray->release();
-
-            // finally run the param callbacks
-            callParamCallbacks();
-
-            // check if file needs to be written out
-            if (writeFile) {
-              switch(writeMode) {
-                case NDFileModeSingle:
-                  this->saveDataFrame(0);
-                  break;
-                case NDFileModeCapture:
-                  for (int i=0; i<fileNumCapture; i++) {
-                    this->saveDataFrame(i, i!=0);
-                    mCaptureBufferArrays[i]->release();
-                    mCaptureBufferArrays[i] = NULL;
-                  }
-                  fileNumCaptured = 0;
-                  setIntegerParam(NDFileNumCaptured, fileNumCaptured);
-                  break;
-                case NDFileModeStream:
-                  this->saveDataFrame(0, fileNumCaptured>1);
-                  break;
-              }
-
-              // update changes from file writing
-              callParamCallbacks();
-            }
-          } else {
-            // if no array callbacks then just do normal ones
+            // update changes from file writing
             callParamCallbacks();
           }
         }

@@ -382,11 +382,60 @@ record(longin, "$(P)$(R)ArchonNumDummyPixels_RBV")
     field(SCAN, "I/O Intr")
 }
 
+record(ai, "$(P)$(R)ArchonClearTime_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_CLEAR_TIME")
+    field(PREC, "5")
+    field(EGU,  "sec")
+    field(SCAN, "I/O Intr")
+}
+
 record(ai, "$(P)$(R)ArchonReadOutTime_RBV")
 {
     field(DTYP, "asynFloat64")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_READOUT_TIME")
     field(PREC, "5")
+    field(EGU,  "sec")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)ArchonBatchDelay")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BATCH_DELAY")
+    field(PREC, "6")
+    field(VAL,  "0.008333")
+    field(EGU,  "sec")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)ArchonBatchDelay_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BATCH_DELAY")
+    field(PREC, "6")
+    field(EGU,  "sec")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)ArchonMinBatchPeriod")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MIN_BATCH_PERIOD")
+    field(PREC, "6")
+    field(VAL,  "0.008333")
+    field(EGU,  "sec")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)ArchonMinBatchPeriod_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_MIN_BATCH_PERIOD")
+    field(PREC, "6")
     field(EGU,  "sec")
     field(SCAN, "I/O Intr")
 }

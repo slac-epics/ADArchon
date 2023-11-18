@@ -6,7 +6,7 @@ release 1
 x 677
 y 54
 w 1070
-h 900
+h 950
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-bold-r-10.0"
 btnFont "helvetica-medium-r-18.0"
@@ -486,7 +486,7 @@ release 0
 x 360
 y 256
 w 352
-h 625
+h 670
 lineColor index 14
 fillColor index 14
 lineWidth 0
@@ -2006,7 +2006,7 @@ release 0
 x 5
 y 380
 w 350
-h 505
+h 530
 lineColor index 14
 fillColor index 14
 lineWidth 0
@@ -2709,9 +2709,30 @@ fgColor index 14
 bgColor index 3
 useDisplayBg
 value {
+  "Clear Time"
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 17
+y 882
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
   "Readout Time"
 }
 endObjectProperties
+
 
 # (Text Monitor)
 object activeXTextDspClass:noedit
@@ -3091,6 +3112,31 @@ minor 7
 release 0
 x 240
 y 858
+w 80
+h 20
+controlPv "$(P)$(R)ArchonClearTime_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+precision 4
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 240
+y 882
 w 80
 h 20
 controlPv "$(P)$(R)ArchonReadOutTime_RBV"
@@ -4029,7 +4075,7 @@ fgColor index 14
 bgColor index 3
 useDisplayBg
 value {
-  "Frame Poll Period"
+  "Minimum Batch Period"
 }
 endObjectProperties
 
@@ -4041,6 +4087,144 @@ minor 7
 release 0
 x 530
 y 850
+w 60
+h 20
+controlPv "$(P)$(R)ArchonMinBatchPeriod"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 596
+y 850
+w 100
+h 18
+controlPv "$(P)$(R)ArchonMinBatchPeriod_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 378
+y 874
+w 145
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Batch Update Delay"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 530
+y 874
+w 60
+h 20
+controlPv "$(P)$(R)ArchonBatchDelay"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 596
+y 874
+w 100
+h 18
+controlPv "$(P)$(R)ArchonBatchDelay_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 378
+y 898
+w 145
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Frame Poll Period"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 530
+y 898
 w 60
 h 20
 controlPv "$(P)$(R)ArchonFramePollPeriod"
@@ -4065,7 +4249,7 @@ major 4
 minor 7
 release 0
 x 596
-y 850
+y 898
 w 100
 h 18
 controlPv "$(P)$(R)ArchonFramePollPeriod_RBV"
