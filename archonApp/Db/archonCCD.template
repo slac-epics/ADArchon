@@ -98,7 +98,6 @@ record(bo, "$(P)$(R)ArchonPowerMode")
     field(PINI, "1")
     field(DTYP, "asynInt32")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_POWER_SWITCH")
-    info( autosaveFields, "VAL" )
 }
 
 record(mbbi, "$(P)$(R)ArchonPowerMode_RBV")
@@ -490,6 +489,26 @@ record(waveform, "$(P)$(R)ArchonShutterMessage_RBV")
     field(SCAN, "I/O Intr")
 }
 
+# status message for detector heater (error messages, information messages, etc.)
+record(waveform, "$(P)$(R)ArchonHeaterMessage_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HTR_STAT")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
+# status message for detector sensor (error messages, information messages, etc.)
+record(waveform, "$(P)$(R)ArchonSensorMessage_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SEN_STAT")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
 record(mbbo, "$(P)$(R)ArchonShutterMode")
 {
     field(PINI, "YES")
@@ -518,6 +537,23 @@ record(bi, "$(P)$(R)ArchonShutterPolarity_RBV")
     field(DTYP, "asynInt32")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SHUTTER_POLARITY")
     field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)$(R)ArchonHeaterUpdateTime")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_UPDATETIME")
+    field(EGU,  "ms")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)ArchonHeaterUpdateTime_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_UPDATETIME")
+    field(SCAN, "I/O Intr")
+    field(EGU,  "ms")
 }
 
 # Name of the acf configuration file that defines the hardware / data acquistion program of the camera

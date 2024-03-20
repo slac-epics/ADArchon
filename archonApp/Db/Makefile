@@ -13,6 +13,8 @@ include $(TOP)/configure/CONFIG
 
 DB += archonCCD.template
 DB += archonModule.template
+DB += archonHeater.template
+DB += archonSensor.template
 DB += archonXmitDelay.template
 
 REQ += archonCCD_settings.req

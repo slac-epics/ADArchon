@@ -1,0 +1,250 @@
+# These records are specific to archon detector one per heater
+record(waveform, "$(P)$(R)HTR$(HTR):ArchonHeaterLabel")
+{
+    field(PINI, "1")
+    field(DTYP, "asynOctetWrite")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_LABEL_$(HTR)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    info( autosaveFields, "VAL" )
+}
+
+record(waveform, "$(P)$(R)HTR$(HTR):ArchonHeaterLabel_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_LABEL_$(HTR)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
+record(bo, "$(P)$(R)HTR$(HTR):ArchonHeaterEnable")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_ENABLE_$(HTR)")
+    info( autosaveFields, "VAL" )
+}
+
+record(bi, "$(P)$(R)HTR$(HTR):ArchonHeaterEnable_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_ENABLE_$(HTR)")
+    field(SCAN, "I/O Intr")
+}
+
+record(bo, "$(P)$(R)HTR$(HTR):ArchonHeaterForce")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_FORCE_$(HTR)")
+    info( autosaveFields, "VAL" )
+}
+
+record(bi, "$(P)$(R)HTR$(HTR):ArchonHeaterForce_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_FORCE_$(HTR)")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)HTR$(HTR):ArchonHeaterForceLevel")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_FORCELEVEL_$(HTR)")
+    field(PREC, "3")
+    field(EGU,  "W")
+    field(VAL,  "0.0")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)HTR$(HTR):ArchonHeaterForceLevel_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_FORCELEVEL_$(HTR)")
+    field(PREC, "3")
+    field(EGU,  "W")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)HTR$(HTR):ArchonHeaterLimit")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_LIMIT_$(HTR)")
+    field(PREC, "3")
+    field(EGU,  "W")
+    field(VAL,  "25.0")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)HTR$(HTR):ArchonHeaterLimit_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_LIMIT_$(HTR)")
+    field(PREC, "3")
+    field(EGU,  "W")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)HTR$(HTR):ArchonHeaterTarget")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_TARGET_$(HTR)")
+    field(PREC, "1")
+    field(EGU,  "C")
+    field(VAL,  "0.0")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)HTR$(HTR):ArchonHeaterTarget_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_TARGET_$(HTR)")
+    field(PREC, "1")
+    field(EGU,  "C")
+    field(SCAN, "I/O Intr")
+}
+
+record(mbbo, "$(P)$(R)HTR$(HTR):ArchonHeaterSensor")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_SENSOR_$(HTR)")
+    info( autosaveFields, "VAL" )
+}
+
+record(mbbi, "$(P)$(R)HTR$(HTR):ArchonHeaterSensor_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_SENSOR_$(HTR)")
+    field(SCAN, "I/O Intr")
+}
+
+record(bo, "$(P)$(R)HTR$(HTR):ArchonHeaterRamp")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_RAMP_$(HTR)")
+    info( autosaveFields, "VAL" )
+}
+
+record(bi, "$(P)$(R)HTR$(HTR):ArchonHeaterRamp_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_RAMP_$(HTR)")
+    field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)$(R)HTR$(HTR):ArchonHeaterRampRate")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_RAMPRATE_$(HTR)")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)HTR$(HTR):ArchonHeaterRampRate_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_RAMPRATE_$(HTR)")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)HTR$(HTR):ArchonHeaterPterm")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_PTERM_$(HTR)")
+    field(PREC, "3")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)HTR$(HTR):ArchonHeaterPterm_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_PTERM_$(HTR)")
+    field(PREC, "3")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)HTR$(HTR):ArchonHeaterIterm")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_ITERM_$(HTR)")
+    field(PREC, "3")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)HTR$(HTR):ArchonHeaterIterm_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_ITERM_$(HTR)")
+    field(PREC, "3")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)HTR$(HTR):ArchonHeaterDterm")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_DTERM_$(HTR)")
+    field(PREC, "3")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)HTR$(HTR):ArchonHeaterDterm_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_DTERM_$(HTR)")
+    field(PREC, "3")
+    field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)$(R)HTR$(HTR):ArchonHeaterItermLimit")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_ITERMLIMIT_$(HTR)")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)HTR$(HTR):ArchonHeaterItermLimit_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_ITERMLIMIT_$(HTR)")
+    field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)HTR$(HTR):ArchonHeaterOutput_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_OUTPUT_$(HTR)")
+    field(PREC, "3")
+    field(EGU,  "V")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(R)HTR$(HTR):ArchonHeaterPtermActual_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_PTERM_READ_$(HTR)")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(R)HTR$(HTR):ArchonHeaterItermActual_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_ITERM_READ_$(HTR)")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(R)HTR$(HTR):ArchonHeaterDtermActual_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_DTERM_READ_$(HTR)")
+    field(SCAN, "I/O Intr")
+}

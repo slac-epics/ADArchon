@@ -88,6 +88,27 @@ const epicsInt32 ArchonCCD::AShutterAlwaysClosed = 2;
 
 const epicsInt32 ArchonCCD::AFRAW = 0;
 
+const epicsInt32 ArchonCCD::ASA = 0;
+const epicsInt32 ArchonCCD::ASB = 1;
+const epicsInt32 ArchonCCD::ASC = 2;
+
+const epicsInt32 ArchonCCD::ASDT670 = 0;
+const epicsInt32 ArchonCCD::ASDT470 = 1;
+const epicsInt32 ArchonCCD::ASRTD100 = 2;
+const epicsInt32 ArchonCCD::ASRTD400 = 3;
+const epicsInt32 ArchonCCD::ASRTD1000 = 4;
+const epicsInt32 ArchonCCD::ASRTD2000 = 5;
+
+const epicsInt32 ArchonCCD::ASDisabled = 0;
+const epicsInt32 ArchonCCD::ASFilter2 = 1;
+const epicsInt32 ArchonCCD::ASFilter4 = 2;
+const epicsInt32 ArchonCCD::ASFilter8 = 3;
+const epicsInt32 ArchonCCD::ASFilter16 = 4;
+const epicsInt32 ArchonCCD::ASFilter32 = 5;
+const epicsInt32 ArchonCCD::ASFilter64 = 6;
+const epicsInt32 ArchonCCD::ASFilter128 = 7;
+const epicsInt32 ArchonCCD::ASFilter256 = 8;
+
 const epicsFloat64 ArchonCCD::SECS_PER_CLOCK = 10.e-9;
 const epicsUInt64 ArchonCCD::CLOCK_PER_MSEC = 100000;
 
@@ -173,6 +194,33 @@ const ArchonCCD::ArchonEnumInfo ArchonCCD::ShutterPolarityEnums[] = {
   {"Inverted",  ABTrue,   epicsSevNone},
 };
 
+const ArchonCCD::ArchonEnumInfo ArchonCCD::SensorNameEnums[] = {
+  {"A", ASA, epicsSevNone},
+  {"B", ASB, epicsSevNone},
+  {"C", ASC, epicsSevNone},
+};
+
+const ArchonCCD::ArchonEnumInfo ArchonCCD::SensorTypeEnums[] = {
+  {"DT-670",  ASDT670,    epicsSevNone},
+  {"DT-470",  ASDT470,    epicsSevNone},
+  {"RTD100",  ASRTD100,   epicsSevNone},
+  {"RTD400",  ASRTD400,   epicsSevNone},
+  {"RTD1000", ASRTD1000,  epicsSevNone},
+  {"RTD2000", ASRTD2000,  epicsSevNone},
+};
+
+const ArchonCCD::ArchonEnumInfo ArchonCCD::SensorFilterEnums[] = {
+  {"Disabled",  ASDisabled,   epicsSevNone},
+  {"x2",        ASFilter2,    epicsSevNone},
+  {"x4",        ASFilter4,    epicsSevNone},
+  {"x8",        ASFilter8,    epicsSevNone},
+  {"x16",       ASFilter16,   epicsSevNone},
+  {"x32",       ASFilter32,   epicsSevNone},
+  {"x64",       ASFilter64,   epicsSevNone},
+  {"x128",      ASFilter128,  epicsSevNone},
+  {"x256",      ASFilter256,  epicsSevNone},
+};
+
 const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnums[] = {
   {OnOffEnums,
    sizeofArray(OnOffEnums),
@@ -214,7 +262,22 @@ const size_t ArchonCCD::ArchonEnumsSize = sizeofArray(ArchonCCD::ArchonEnums);
 const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnumsSpecial[] = {
   {ModuleTypeEnums,
    sizeofArray(ModuleTypeEnums),
-   ArchonModuleTypeString}
+   ArchonModuleTypeString},
+  {OnOffEnums,
+   sizeofArray(OnOffEnums),
+   ArchonHeaterEnableString},
+  {SensorNameEnums,
+   sizeofArray(SensorNameEnums),
+   ArchonHeaterSensorString},
+  {OnOffEnums,
+   sizeofArray(OnOffEnums),
+   ArchonHeaterRampString},
+  {SensorTypeEnums,
+   sizeofArray(SensorTypeEnums),
+   ArchonSensorTypeString},
+  {SensorFilterEnums,
+   sizeofArray(SensorFilterEnums),
+   ArchonSensorFilterString}
 };
 
 const size_t ArchonCCD::ArchonEnumsSpecialSize = sizeofArray(ArchonCCD::ArchonEnumsSpecial);
@@ -307,6 +370,11 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   unsigned activeTaplines;
   unsigned shutterMode;
   unsigned shutterPolarity;
+  double sensorTemp;
+  double heaterOutput;
+  unsigned termValue;
+  Pds::Archon::HeaterConfig heaterConfig;
+  Pds::Archon::SensorConfig sensorConfig;
 
   Pds::Archon::PowerMode powerMode = Pds::Archon::Unknown;
 
@@ -318,6 +386,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonMessageString,          asynParamOctet,   &ArchonMessage);
   createParam(ArchonShutterMessageString,   asynParamOctet,   &ArchonShutterMessage);
   createParam(ArchonPwrStatusMessageString, asynParamOctet,   &ArchonPwrStatusMessage);
+  createParam(ArchonHtrStatusMessageString, asynParamOctet,   &ArchonHtrStatusMessage);
+  createParam(ArchonSenStatusMessageString, asynParamOctet,   &ArchonSenStatusMessage);
   createParam(ArchonBackplaneTypeString,    asynParamInt32,   &ArchonBackplaneType);
   createParam(ArchonBackplaneRevString,     asynParamInt32,   &ArchonBackplaneRev);
   for (unsigned nMod = 0; nMod < ArchonMaxModules; nMod++) {
@@ -365,6 +435,59 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonPixelsPerTapString,     asynParamInt32,   &ArchonPixelsPerTap);
   createParam(ArchonShutterModeString,      asynParamInt32,   &ArchonShutterMode);
   createParam(ArchonShutterPolarityString,  asynParamInt32,   &ArchonShutterPolarity);
+  for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterLabelString, 'A' + nHeater);
+    createParam(tempString,                 asynParamOctet,   &ArchonHeaterLabel[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterEnableString, 'A' + nHeater);
+    createParam(tempString,                 asynParamInt32,   &ArchonHeaterEnable[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterForceString, 'A' + nHeater);
+    createParam(tempString,                 asynParamInt32,   &ArchonHeaterForce[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterForceLevelString, 'A' + nHeater);
+    createParam(tempString,                 asynParamFloat64, &ArchonHeaterForceLevel[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterLimitString, 'A' + nHeater);
+    createParam(tempString,                 asynParamFloat64, &ArchonHeaterLimit[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterTargetString, 'A' + nHeater);
+    createParam(tempString,                 asynParamFloat64, &ArchonHeaterTarget[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterSensorString, 'A' + nHeater);
+    createParam(tempString,                 asynParamInt32,   &ArchonHeaterSensor[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterPTermString, 'A' + nHeater);
+    createParam(tempString,                 asynParamFloat64, &ArchonHeaterPTerm[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterITermString, 'A' + nHeater);
+    createParam(tempString,                 asynParamFloat64, &ArchonHeaterITerm[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterDTermString, 'A' + nHeater);
+    createParam(tempString,                 asynParamFloat64, &ArchonHeaterDTerm[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterITermLimitString, 'A' + nHeater);
+    createParam(tempString,                 asynParamInt32,   &ArchonHeaterITermLimit[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterRampString, 'A' + nHeater);
+    createParam(tempString,                 asynParamInt32,   &ArchonHeaterRamp[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterRampRateString, 'A' + nHeater);
+    createParam(tempString,                 asynParamInt32,   &ArchonHeaterRampRate[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterOutputString, 'A' + nHeater);
+    createParam(tempString,                 asynParamFloat64, &ArchonHeaterOutput[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterPTermReadString, 'A' + nHeater);
+    createParam(tempString,                 asynParamInt32,   &ArchonHeaterPTermRead[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterITermReadString, 'A' + nHeater);
+    createParam(tempString,                 asynParamInt32,   &ArchonHeaterITermRead[nHeater]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonHeaterDTermReadString, 'A' + nHeater);
+    createParam(tempString,                 asynParamInt32,   &ArchonHeaterDTermRead[nHeater]);
+  }
+  for (unsigned nSensor = 0; nSensor < ArchonMaxSensors; nSensor++) {
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonSensorLabelString, 'A' + nSensor);
+    createParam(tempString,                 asynParamOctet,   &ArchonSensorLabel[nSensor]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonSensorTypeString, 'A' + nSensor);
+    createParam(tempString,                 asynParamInt32,   &ArchonSensorType[nSensor]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonSensorCurrentString, 'A' + nSensor);
+    createParam(tempString,                 asynParamInt32,   &ArchonSensorCurrent[nSensor]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonSensorLowerLimitString, 'A' + nSensor);
+    createParam(tempString,                 asynParamFloat64, &ArchonSensorLowerLimit[nSensor]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonSensorUpperLimitString, 'A' + nSensor);
+    createParam(tempString,                 asynParamFloat64, &ArchonSensorUpperLimit[nSensor]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonSensorFilterString, 'A' + nSensor);
+    createParam(tempString,                 asynParamInt32,   &ArchonSensorFilter[nSensor]);
+    epicsSnprintf(tempString, sizeof(tempString), "%s_%c", ArchonSensorTempString, 'A' + nSensor);
+    createParam(tempString,                 asynParamFloat64, &ArchonSensorTemp[nSensor]);
+  }
+  createParam(ArchonHeaterUpdateTimeString, asynParamInt32,   &ArchonHeaterUpdateTime);
   createParam(ArchonConfigFileString,       asynParamOctet,   &ArchonConfigFile);
 
   // Create the epicsEvent for signaling to the status task when parameters should have changed.
@@ -461,6 +584,24 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
     printf("%s:%s: current overheat status is %s\n", driverName, functionName, overheat ? "Faulted" : "Ok");
     setIntegerParam(ArchonOverheat, overheat);
 
+    // Get the heater status values
+    for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
+      checkStatus(mDrv->get_heater_output('A' + nHeater, &heaterOutput), "Unable to read heater output");
+      setDoubleParam(ArchonHeaterOutput[nHeater], heaterOutput);
+      checkStatus(mDrv->get_heater_pid('A' + nHeater, 'P', &termValue), "Unable to read pid pterm value");
+      setIntegerParam(ArchonHeaterPTermRead[nHeater], termValue);
+      checkStatus(mDrv->get_heater_pid('A' + nHeater, 'I', &termValue), "Unable to read pid iterm value");
+      setIntegerParam(ArchonHeaterITermRead[nHeater], termValue);
+      checkStatus(mDrv->get_heater_pid('A' + nHeater, 'D', &termValue), "Unable to read pid dterm value");
+      setIntegerParam(ArchonHeaterDTermRead[nHeater], termValue);
+    }
+
+    // Get the sensor status values
+    for (unsigned nSensor = 0; nSensor < ArchonMaxSensors; nSensor++) {
+      checkStatus(mDrv->get_sensor_temp('A' + nSensor, &sensorTemp), "Unable to read sensor temperature");
+      setDoubleParam(ArchonSensorTemp[nSensor], sensorTemp);
+    }
+
     // Get the bias voltage and current
     mBiasCache = false;
     mBiasChannelCache = biasChan;
@@ -488,6 +629,42 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
                     moduleId.c_str());
       setStringParam(ArchonModuleInfo[nMod], tempString);
       setDoubleParam(ArchonModuleTemp[nMod], status.module_temp(nMod+1));
+    }
+
+    // initialize the per heater parameters
+    for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
+      checkStatus(mDrv->get_heater_config('A' + nHeater, &heaterConfig),
+                  "Unable to read heater config");
+      setStringParam(ArchonHeaterLabel[nHeater], heaterConfig.label);
+      setIntegerParam(ArchonHeaterEnable[nHeater], heaterConfig.enable);
+      setIntegerParam(ArchonHeaterForce[nHeater], heaterConfig.force);
+      setDoubleParam(ArchonHeaterForceLevel[nHeater], heaterConfig.forcelevel);
+      setDoubleParam(ArchonHeaterLimit[nHeater], heaterConfig.limit);
+      setDoubleParam(ArchonHeaterTarget[nHeater], heaterConfig.target);
+      setIntegerParam(ArchonHeaterSensor[nHeater], heaterConfig.sensor);
+      setDoubleParam(ArchonHeaterPTerm[nHeater], heaterConfig.pterm);
+      setDoubleParam(ArchonHeaterITerm[nHeater], heaterConfig.iterm);
+      setDoubleParam(ArchonHeaterDTerm[nHeater], heaterConfig.dterm);
+      setIntegerParam(ArchonHeaterITermLimit[nHeater], heaterConfig.itermlimit);
+      setIntegerParam(ArchonHeaterRamp[nHeater], heaterConfig.ramp);
+      setIntegerParam(ArchonHeaterRampRate[nHeater], heaterConfig.ramprate);
+      // cache the heater config
+      mHeaterCache[nHeater] = heaterConfig;
+    }
+    setIntegerParam(ArchonHeaterUpdateTime, heaterConfig.updatetime);
+
+    // initialize the per sensor parameters
+    for (unsigned nSensor = 0; nSensor < ArchonMaxSensors; nSensor++) {
+      checkStatus(mDrv->get_sensor_config('A' + nSensor, &sensorConfig),
+                  "Unable to read sensor config");
+      setStringParam(ArchonSensorLabel[nSensor], sensorConfig.label);
+      setIntegerParam(ArchonSensorType[nSensor], sensorConfig.type);
+      setIntegerParam(ArchonSensorCurrent[nSensor], sensorConfig.current);
+      setDoubleParam(ArchonSensorLowerLimit[nSensor], sensorConfig.lowerlimit);
+      setDoubleParam(ArchonSensorUpperLimit[nSensor], sensorConfig.upperlimit);
+      setIntegerParam(ArchonSensorFilter[nSensor], sensorConfig.filter);
+      // cache the sensor config
+      mSensorCache[nSensor] = sensorConfig;
     }
 
     callParamCallbacks();
@@ -733,6 +910,8 @@ asynStatus ArchonCCD::readEnum(asynUser *pasynUser, char *strings[], int values[
 
 asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
+  int heater = -1;
+  int sensor = -1;
   int function = pasynUser->reason;
   bool signalDataTask = false;
   int adstatus = 0;
@@ -744,6 +923,48 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
   // set param and save backup of old value
   getIntegerParam(function, &oldValue);
   status = setIntegerParam(function, value);
+
+  /* Check if the parameter is a heater one. */
+  for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
+    if (function == ArchonHeaterEnable[nHeater]) {
+      heater = nHeater;
+      break;
+    } else if (function == ArchonHeaterForce[nHeater]) {
+      heater = nHeater;
+      break;
+    } else if (function == ArchonHeaterSensor[nHeater]) {
+      heater = nHeater;
+      break;
+    } else if (function == ArchonHeaterITermLimit[nHeater]) {
+      heater = nHeater;
+      break;
+    } else if (function == ArchonHeaterRamp[nHeater]) {
+      heater = nHeater;
+      break;
+    } else if (function == ArchonHeaterRampRate[nHeater]) {
+      heater = nHeater;
+      break;
+    }
+  }
+  /* Check if its the special global heater one. */
+  if (function == ArchonHeaterUpdateTime) {
+    // just pretend its heater A...
+    heater = 0;
+  }
+
+  /* Check if the parameter is a sensor one. */
+  for (unsigned nSensor = 0; nSensor < ArchonMaxSensors; nSensor++) {
+    if (function == ArchonSensorType[nSensor]) {
+      sensor = nSensor;
+      break;
+    } else if (function == ArchonSensorCurrent[nSensor]) {
+      sensor = nSensor;
+      break;
+    } else if (function == ArchonSensorFilter[nSensor]) {
+      sensor = nSensor;
+      break;
+    }
+  }
 
   if (function == ADAcquire) {
     getIntegerParam(ADStatus, &adstatus);
@@ -808,6 +1029,14 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
         status = asynError;
       }
     }
+  }
+  else if (heater >= 0) {
+    status = setupHeater(heater);
+    if (status != asynSuccess) setIntegerParam(function, oldValue);
+  }
+  else if (sensor >= 0) {
+    status = setupSensor(sensor);
+    if (status != asynSuccess) setDoubleParam(function, oldValue);
   }
   else if ((function == ADNumExposures)       || (function == ADNumImages)        ||
            (function == ADImageMode)                                              ||
@@ -892,6 +1121,8 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
  * \param[in] value Value to write. */
 asynStatus ArchonCCD::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
+  int heater = -1;
+  int sensor = -1;
   int function = pasynUser->reason;
   asynStatus status = asynSuccess;
   static const char *functionName = "writeFloat64";
@@ -903,31 +1134,73 @@ asynStatus ArchonCCD::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
   /* Set the parameter and readback in the parameter library.  */
   status = setDoubleParam(function, value);
 
+  /* Check if the parameter is a heater one. */
+  for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
+    if (function == ArchonHeaterForceLevel[nHeater]) {
+      heater = nHeater;
+      break;
+    } else if (function == ArchonHeaterLimit[nHeater]) {
+      heater = nHeater;
+      break;
+    } else if (function == ArchonHeaterTarget[nHeater]) {
+      heater = nHeater;
+      break;
+    } else if (function == ArchonHeaterPTerm[nHeater]) {
+      heater = nHeater;
+      break;
+    } else if (function == ArchonHeaterITerm[nHeater]) {
+      heater = nHeater;
+      break;
+    } else if (function == ArchonHeaterDTerm[nHeater]) {
+      heater = nHeater;
+      break;
+    }
+  }
+
+  /* Check if the parameter is a sensor one. */
+  for (unsigned nSensor = 0; nSensor < ArchonMaxSensors; nSensor++) {
+    if (function == ArchonSensorLowerLimit[nSensor]) {
+      sensor = nSensor;
+      break;
+    } else if (function == ArchonSensorUpperLimit[nSensor]) {
+      sensor = nSensor;
+      break;
+    }
+  }
+
   if (function == ADAcquireTime) {
     mAcquireTime = archonTimeConvert(value);
     status = setupAcquisition();
-    if (status != asynSuccess) setIntegerParam(function, oldValue);
+    if (status != asynSuccess) setDoubleParam(function, oldValue);
   }
   else if (function == ADAcquirePeriod) {
     mAcquirePeriod = archonTimeConvert(value);
     status = setupAcquisition();
-    if (status != asynSuccess) setIntegerParam(function, oldValue);
+    if (status != asynSuccess) setDoubleParam(function, oldValue);
   }
   else if (function == ArchonNonIntTime) {
     mNonIntTime = archonTimeConvert(value);
     status = setupAcquisition();
-    if (status != asynSuccess) setIntegerParam(function, oldValue);
+    if (status != asynSuccess) setDoubleParam(function, oldValue);
   }
   else if (function == ArchonBiasSetpoint) {
     status = setupPowerAndBias();
-    if (status != asynSuccess) setIntegerParam(function, oldValue);
+    if (status != asynSuccess) setDoubleParam(function, oldValue);
   }
   else if (function == ArchonMinBatchPeriod) {
     mMinBatchPeriod = archonClockConvert(value);
   }
   else if (function == ArchonFramePollPeriod) {
     status = setupFramePoll(value);
-    if (status != asynSuccess) setIntegerParam(function, oldValue);
+    if (status != asynSuccess) setDoubleParam(function, oldValue);
+  }
+  else if (heater >= 0) {
+    status = setupHeater(heater);
+    if (status != asynSuccess) setDoubleParam(function, oldValue);
+  }
+  else if (sensor >= 0) {
+    status = setupSensor(sensor);
+    if (status != asynSuccess) setDoubleParam(function, oldValue);
   }
   else {
     status = ADDriver::writeFloat64(pasynUser, value);
@@ -943,6 +1216,68 @@ asynStatus ArchonCCD::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
   else {
     asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
               "%s:%s: function=%d, value=%f\n",
+              driverName, functionName, function, value);
+    /* For a successful write, clear the error message. */
+    setStringParam(ArchonMessage, " ");
+  }
+  return status;
+}
+
+asynStatus ArchonCCD::writeOctet(asynUser *pasynUser, const char *value,
+                                 size_t nChars, size_t *nActual)
+{
+  int heater = -1;
+  int sensor = -1;
+  int function = pasynUser->reason;
+  asynStatus status = asynSuccess;
+  static const char *functionName = "writeOctet";
+
+  /* Store the old value */
+  std::string oldValue;
+  getStringParam(function, oldValue);
+
+  /* Set the parameter and readback in the parameter library.  */
+  status = setStringParam(function, value);
+  *nActual = nChars;
+
+  /* Check if the parameter is a heater one. */
+  for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
+    if (function == ArchonHeaterLabel[nHeater]) {
+      heater = nHeater;
+      break;
+    }
+  }
+
+  /* Check if the parameter is a sensor one. */
+  for (unsigned nSensor = 0; nSensor < ArchonMaxSensors; nSensor++) {
+    if (function == ArchonSensorLabel[nSensor]) {
+      sensor = nSensor;
+      break;
+    }
+  }
+
+  if (heater >= 0) {
+    status = setupHeater(heater);
+    if (status != asynSuccess) setStringParam(function, oldValue);
+  }
+  else if (sensor >= 0) {
+    status = setupSensor(sensor);
+    if (status != asynSuccess) setStringParam(function, oldValue);
+  }
+  else {
+    status = ADDriver::writeOctet(pasynUser, value, nChars, nActual);
+  }
+
+  /* Do callbacks so higher layers see any changes */
+  callParamCallbacks();
+  if (status) {
+    asynPrint(pasynUser, ASYN_TRACE_ERROR,
+              "%s:%s: error, status=%d function=%d, value=%s\n",
+              driverName, functionName, status, function, value);
+  }
+  else {
+    asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
+              "%s:%s: function=%d, value=%s\n",
               driverName, functionName, function, value);
     /* For a successful write, clear the error message. */
     setStringParam(ArchonMessage, " ");
@@ -1096,6 +1431,9 @@ void ArchonCCD::statusTask(void)
   float temperature;
   float voltage;
   float current;
+  double sensorTemp;
+  double heaterOutput;
+  unsigned termValue;
   unsigned int status = 0;
   double timeout = 0.0;
   unsigned int forcedFastPolls = 0;
@@ -1154,6 +1492,27 @@ void ArchonCCD::statusTask(void)
         // Read the module temps
         for (unsigned nMod = 0; nMod < ArchonMaxModules; nMod++) {
           setDoubleParam(ArchonModuleTemp[nMod], detStatus.module_temp(nMod+1));
+        }
+        // Read the heater output and pid values
+        for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
+          checkStatus(mDrv->get_heater_output('A' + nHeater, &heaterOutput),
+                      "Unable to read heater output");
+          setDoubleParam(ArchonHeaterOutput[nHeater], heaterOutput);
+          checkStatus(mDrv->get_heater_pid('A' + nHeater, 'P', &termValue),
+                      "Unable to read pid pterm value");
+          setIntegerParam(ArchonHeaterPTermRead[nHeater], termValue);
+          checkStatus(mDrv->get_heater_pid('A' + nHeater, 'I', &termValue),
+                      "Unable to read pid iterm value");
+          setIntegerParam(ArchonHeaterITermRead[nHeater], termValue);
+          checkStatus(mDrv->get_heater_pid('A' + nHeater, 'D', &termValue),
+                      "Unable to read pid dterm value");
+          setIntegerParam(ArchonHeaterDTermRead[nHeater], termValue);
+        }
+        // Read the sensor temperatures
+        for (unsigned nSensor = 0; nSensor < ArchonMaxSensors; nSensor++) {
+          checkStatus(mDrv->get_sensor_temp('A' + nSensor, &sensorTemp),
+                      "Unable to read sensor temperature");
+          setDoubleParam(ArchonSensorTemp[nSensor], sensorTemp);
         }
         // Read bias voltage and current
         getIntegerParam(ArchonBiasChan, &biasChan);
@@ -1304,6 +1663,150 @@ asynStatus ArchonCCD::setupShutter(int command)
   return asynSuccess;
 }
 
+asynStatus ArchonCCD::setupHeater(int heater)
+{
+  int value;
+  char name = 'A' + heater;
+  Pds::Archon::HeaterConfig heaterConfig;
+  static const char *functionName = "setupHeater";
+
+  if (!mInitOK) {
+    return asynDisabled;
+  }
+
+  if (mAcquiringData) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: Unable to set heater while acquiring\n",
+              driverName, functionName);
+    setStringParam(ArchonHtrStatusMessage, "Cannot set heater while acquiring");
+    return asynError;
+  }
+
+  /* get the label value. */
+  getStringParam(ArchonHeaterLabel[heater], heaterConfig.label);
+  /* get the enable value. */
+  getIntegerParam(ArchonHeaterEnable[heater], &value);
+  heaterConfig.enable = value;
+  /* get the force value. */
+  getIntegerParam(ArchonHeaterForce[heater], &value);
+  heaterConfig.force = value;
+  /* get the forcelevel value. */
+  getDoubleParam(ArchonHeaterForceLevel[heater], &heaterConfig.forcelevel);
+  /* get the limit value. */
+  getDoubleParam(ArchonHeaterLimit[heater], &heaterConfig.limit);
+  /* get the target value. */
+  getDoubleParam(ArchonHeaterTarget[heater], &heaterConfig.target);
+  /* get the sensor value. */
+  getIntegerParam(ArchonHeaterSensor[heater], &value);
+  heaterConfig.sensor = value;
+  /* get the pterm value. */
+  getDoubleParam(ArchonHeaterPTerm[heater], &heaterConfig.pterm);
+  /* get the iterm value. */
+  getDoubleParam(ArchonHeaterITerm[heater], &heaterConfig.iterm);
+  /* get the dterm value. */
+  getDoubleParam(ArchonHeaterDTerm[heater], &heaterConfig.dterm);
+  /* get the iterm limit value. */
+  getIntegerParam(ArchonHeaterITermLimit[heater], &value);
+  heaterConfig.itermlimit = value;
+  /* get the ramp value. */
+  getIntegerParam(ArchonHeaterRamp[heater], &value);
+  heaterConfig.ramp = value;
+  /* get the ramp rate value. */
+  getIntegerParam(ArchonHeaterRampRate[heater], &value);
+  heaterConfig.ramprate = value;
+  /* get the update time value. */
+  getIntegerParam(ArchonHeaterUpdateTime, &value);
+  heaterConfig.updatetime = value;
+
+  try {
+    if (heaterConfig != mHeaterCache[heater]) {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s: set_heater_config(%c, &heaterConfig)\n",
+                driverName, functionName, name);
+      checkStatus(mDrv->set_heater_config(name, &heaterConfig), "Unable to set heater settings");
+
+      /* For a successful setup, clear the error message. */
+      setStringParam(ArchonHtrStatusMessage, " ");
+      /* update the heater config cache. */
+      mHeaterCache[heater] = heaterConfig;
+    } else {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s: heater %c config not updated\n",
+                driverName, functionName, name);
+    }
+  } catch (const std::string &e) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: %s\n",
+              driverName, functionName, e.c_str());
+    setStringParam(ArchonHtrStatusMessage, e.c_str());
+    return asynError;
+  }
+
+  return asynSuccess;
+}
+
+asynStatus ArchonCCD::setupSensor(int sensor)
+{
+  int value;
+  char name = 'A' + sensor;
+  Pds::Archon::SensorConfig sensorConfig;
+  static const char *functionName = "setupSensor";
+
+  if (!mInitOK) {
+    return asynDisabled;
+  }
+
+  if (mAcquiringData) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: Unable to set sensor while acquiring\n",
+              driverName, functionName);
+    setStringParam(ArchonSenStatusMessage, "Cannot set sensor while acquiring");
+    return asynError;
+  }
+
+  /* get the label value. */
+  getStringParam(ArchonSensorLabel[sensor], sensorConfig.label);
+  /* get the type value. */
+  getIntegerParam(ArchonSensorType[sensor], &value);
+  sensorConfig.type = value;
+  /* get the current value. */
+  getIntegerParam(ArchonSensorCurrent[sensor], &value);
+  sensorConfig.current = value;
+  /* get the lower limit value. */
+  getDoubleParam(ArchonSensorLowerLimit[sensor], &sensorConfig.lowerlimit);
+  /* get the upper limit value. */
+  getDoubleParam(ArchonSensorUpperLimit[sensor], &sensorConfig.upperlimit);
+  /* get the filter value. */
+  getIntegerParam(ArchonSensorFilter[sensor], &value);
+  sensorConfig.filter = value;
+
+  try {
+    if (sensorConfig != mSensorCache[sensor]) {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s: set_sensor_config(%c, &sensorConfig)\n",
+                driverName, functionName, name);
+      checkStatus(mDrv->set_sensor_config(name, &sensorConfig), "Unable to set sensor settings");
+
+      /* For a successful setup, clear the error message. */
+      setStringParam(ArchonSenStatusMessage, " ");
+      /* update the sensor config cache. */
+      mSensorCache[sensor] = sensorConfig;
+    } else {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s: sensor %c config not updated\n",
+                driverName, functionName, name);
+    }
+  } catch (const std::string &e) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: %s\n",
+              driverName, functionName, e.c_str());
+    setStringParam(ArchonSenStatusMessage, e.c_str());
+    return asynError;
+  }
+
+  return asynSuccess;
+}
+
 asynStatus ArchonCCD::setupPowerAndBias()
 {
   int powerSwitch;
@@ -1332,16 +1835,10 @@ asynStatus ArchonCCD::setupPowerAndBias()
   getDoubleParam (ArchonBiasSetpoint, &biasSetpoint);
 
   try {
-    // only setup the bias if it has changed since this is slow and requires power cycle
+    // only setup the bias if it has changed since this can be slow
     if ((biasChan != mBiasChannelCache) ||
         (biasSwitch != mBiasCache) ||
         (fabs(biasSetpoint - mBiasSetpointCache) > 0.05)) {
-      // need to power off to apply bias settings
-      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s: power_off()\n",
-                driverName, functionName);
-      checkStatus(mDrv->power_off(), "Unable to power off ccd");
-
       // Set the detector bias
       asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
                 "%s:%s: set_bias(%s, %s, %f)\n",
@@ -1350,15 +1847,10 @@ asynStatus ArchonCCD::setupPowerAndBias()
                 biasSwitch ?  "true" : "false",
                 biasSetpoint);
       checkStatus(mDrv->set_bias(biasChan, biasSwitch, biasSetpoint), "Unable to set bias settings");
+      // update the cached values after setting
       mBiasCache = biasSwitch;
       mBiasChannelCache = biasChan;
       mBiasSetpointCache = biasSetpoint;
-
-      // make sure power is really off before possibly turning it back on
-      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s: wait_power_mode(Pds::Archon::Off, 5000)\n",
-                driverName, functionName);
-      checkStatus(mDrv->wait_power_mode(Pds::Archon::Off, 5000), "Failed to power off after 5 sec");
     }
 
     // update current power status from detector
@@ -1665,6 +2157,9 @@ void ArchonCCD::dataTask(void)
   float temperature;
   float voltage;
   float current;
+  double sensorTemp;
+  double heaterOutput;
+  unsigned termValue;
   // special global variable for timestampfifo
   extern double camera_ts;
   const Pds::Archon::Status& detStatus = mDrv->status();
@@ -1898,6 +2393,27 @@ void ArchonCCD::dataTask(void)
           // Read the module temps
           for (unsigned nMod = 0; nMod < ArchonMaxModules; nMod++) {
             setDoubleParam(ArchonModuleTemp[nMod], detStatus.module_temp(nMod+1));
+          }
+          // Read the heater output and pid values
+          for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
+            checkStatus(mDrv->get_heater_output('A' + nHeater, &heaterOutput),
+                        "Unable to read heater output");
+            setDoubleParam(ArchonHeaterOutput[nHeater], heaterOutput);
+            checkStatus(mDrv->get_heater_pid('A' + nHeater, 'P', &termValue),
+                        "Unable to read pid pterm value");
+            setIntegerParam(ArchonHeaterPTermRead[nHeater], termValue);
+            checkStatus(mDrv->get_heater_pid('A' + nHeater, 'I', &termValue),
+                        "Unable to read pid iterm value");
+            setIntegerParam(ArchonHeaterITermRead[nHeater], termValue);
+            checkStatus(mDrv->get_heater_pid('A' + nHeater, 'D', &termValue),
+                        "Unable to read pid dterm value");
+            setIntegerParam(ArchonHeaterDTermRead[nHeater], termValue);
+          }
+          // Read the sensor temperatures
+          for (unsigned nSensor = 0; nSensor < ArchonMaxSensors; nSensor++) {
+            checkStatus(mDrv->get_sensor_temp('A' + nSensor, &sensorTemp),
+                        "Unable to read sensor temperature");
+            setDoubleParam(ArchonSensorTemp[nSensor], sensorTemp);
           }
           // Read bias voltage and current
           getIntegerParam(ArchonBiasChan, &biasChan);

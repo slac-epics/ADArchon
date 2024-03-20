@@ -1,0 +1,113 @@
+# These records are specific to archon temperature sensor one per heater
+record(waveform, "$(P)$(R)SEN$(SEN):ArchonSensorLabel")
+{
+    field(PINI, "1")
+    field(DTYP, "asynOctetWrite")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_LABEL_$(SEN)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    info( autosaveFields, "VAL" )
+}
+
+record(waveform, "$(P)$(R)SEN$(SEN):ArchonSensorLabel_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_LABEL_$(SEN)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
+record(mbbo, "$(P)$(R)SEN$(SEN):ArchonSensorType")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_TYPE_$(SEN)")
+    info( autosaveFields, "VAL" )
+}
+
+record(mbbi, "$(P)$(R)SEN$(SEN):ArchonSensorType_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_TYPE_$(SEN)")
+    field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)$(R)SEN$(SEN):ArchonSensorCurrent")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_CURRENT_$(SEN)")
+    field(EGU,  "nA")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)SEN$(SEN):ArchonSensorCurrent_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_CURRENT_$(SEN)")
+    field(EGU,  "nA")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)SEN$(SEN):ArchonSensorLowerLimit")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_LOWERLIMIT_$(SEN)")
+    field(PREC, "1")
+    field(EGU,  "C")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)SEN$(SEN):ArchonSensorLowerLimit_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_LOWERLIMIT_$(SEN)")
+    field(PREC, "1")
+    field(EGU,  "C")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)SEN$(SEN):ArchonSensorUpperLimit")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_UPPERLIMIT_$(SEN)")
+    field(PREC, "1")
+    field(EGU,  "C")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)SEN$(SEN):ArchonSensorUpperLimit_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_UPPERLIMIT_$(SEN)")
+    field(PREC, "1")
+    field(EGU,  "C")
+    field(SCAN, "I/O Intr")
+}
+
+record(mbbo, "$(P)$(R)SEN$(SEN):ArchonSensorFilter")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_FILTER_$(SEN)")
+    info( autosaveFields, "VAL" )
+}
+
+record(mbbi, "$(P)$(R)SEN$(SEN):ArchonSensorFilter_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_FILTER_$(SEN)")
+    field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)SEN$(SEN):ArchonSensorTemperature_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_TEMP_$(SEN)")
+    field(PREC, "6")
+    field(EGU,  "C")
+    field(SCAN, "I/O Intr")
+}

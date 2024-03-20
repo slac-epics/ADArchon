@@ -15,6 +15,8 @@
 #define ArchonMessageString           "ARCHON_MESSAGE"
 #define ArchonShutterMessageString    "ARCHON_SHUTTER_MESSAGE"
 #define ArchonPwrStatusMessageString  "ARCHON_PWR_STAT"
+#define ArchonHtrStatusMessageString  "ARCHON_HTR_STAT"
+#define ArchonSenStatusMessageString  "ARCHON_SEN_STAT"
 #define ArchonBackplaneTypeString     "ARCHON_BACKPLANE_TYPE"
 #define ArchonBackplaneRevString      "ARCHON_BACKPLANE_REV"
 #define ArchonModuleTypeString        "ARCHON_MODULE_TYPE"
@@ -54,8 +56,35 @@
 #define ArchonPixelsPerTapString      "ARCHON_PIXELS_PER_TAP"
 #define ArchonShutterModeString       "ARCHON_SHUTTER_MODE"
 #define ArchonShutterPolarityString   "ARCHON_SHUTTER_POLARITY"
+#define ArchonHeaterLabelString       "ARCHON_HEATER_LABEL"
+#define ArchonHeaterEnableString      "ARCHON_HEATER_ENABLE"
+#define ArchonHeaterForceString       "ARCHON_HEATER_FORCE"
+#define ArchonHeaterForceLevelString  "ARCHON_HEATER_FORCELEVEL"
+#define ArchonHeaterLimitString       "ARCHON_HEATER_LIMIT"
+#define ArchonHeaterTargetString      "ARCHON_HEATER_TARGET"
+#define ArchonHeaterSensorString      "ARCHON_HEATER_SENSOR"
+#define ArchonHeaterPTermString       "ARCHON_HEATER_PTERM"
+#define ArchonHeaterITermString       "ARCHON_HEATER_ITERM"
+#define ArchonHeaterDTermString       "ARCHON_HEATER_DTERM"
+#define ArchonHeaterITermLimitString  "ARCHON_HEATER_ITERMLIMIT"
+#define ArchonHeaterRampString        "ARCHON_HEATER_RAMP"
+#define ArchonHeaterRampRateString    "ARCHON_HEATER_RAMPRATE"
+#define ArchonHeaterUpdateTimeString  "ARCHON_HEATER_UPDATETIME"
+#define ArchonHeaterOutputString      "ARCHON_HEATER_OUTPUT"
+#define ArchonHeaterPTermReadString   "ARCHON_HEATER_PTERM_READ"
+#define ArchonHeaterITermReadString   "ARCHON_HEATER_ITERM_READ"
+#define ArchonHeaterDTermReadString   "ARCHON_HEATER_DTERM_READ"
+#define ArchonSensorLabelString       "ARCHON_SENSOR_LABEL"
+#define ArchonSensorTypeString        "ARCHON_SENSOR_TYPE"
+#define ArchonSensorCurrentString     "ARCHON_SENSOR_CURRENT"
+#define ArchonSensorLowerLimitString  "ARCHON_SENSOR_LOWERLIMIT"
+#define ArchonSensorUpperLimitString  "ARCHON_SENSOR_UPPERLIMIT"
+#define ArchonSensorFilterString      "ARCHON_SENSOR_FILTER"
+#define ArchonSensorTempString        "ARCHON_SENSOR_TEMP"
 #define ArchonConfigFileString        "ARCHON_CONFIG_FILE"
 
+#define ArchonMaxHeaters 2
+#define ArchonMaxSensors 3
 #define ArchonMaxModules 12
 
 /**
@@ -81,6 +110,8 @@ class ArchonCCD : public ADDriver {
     /* These are the methods that we override from ADDriver */
     virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
     virtual asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value);
+    virtual asynStatus writeOctet(asynUser *pasynUser, const char *value,
+                                  size_t nChars, size_t *nActual);
     //virtual void report(FILE *fp, int details);
     virtual asynStatus readEnum(asynUser *pasynUser, char *strings[], int values[], int severities[],
                                 size_t nElements, size_t *nIn);
@@ -112,6 +143,9 @@ class ArchonCCD : public ADDriver {
     static const ArchonEnumInfo ModuleTypeEnums[];
     static const ArchonEnumInfo ShutterModeEnums[];
     static const ArchonEnumInfo ShutterPolarityEnums[];
+    static const ArchonEnumInfo SensorNameEnums[];
+    static const ArchonEnumInfo SensorTypeEnums[];
+    static const ArchonEnumInfo SensorFilterEnums[];
     static const ArchonEnumSet ArchonEnums[];
     static const size_t ArchonEnumsSize;
     static const ArchonEnumSet ArchonEnumsSpecial[];
@@ -121,6 +155,8 @@ class ArchonCCD : public ADDriver {
     int ArchonMessage;
     int ArchonShutterMessage;
     int ArchonPwrStatusMessage;
+    int ArchonHtrStatusMessage;
+    int ArchonSenStatusMessage;
     int ArchonBackplaneType;
     int ArchonBackplaneRev;
     int ArchonModuleType[ArchonMaxModules];
@@ -160,6 +196,31 @@ class ArchonCCD : public ADDriver {
     int ArchonPixelsPerTap;
     int ArchonShutterMode;
     int ArchonShutterPolarity;
+    int ArchonHeaterLabel[ArchonMaxHeaters];
+    int ArchonHeaterEnable[ArchonMaxHeaters];
+    int ArchonHeaterForce[ArchonMaxHeaters];
+    int ArchonHeaterForceLevel[ArchonMaxHeaters];
+    int ArchonHeaterLimit[ArchonMaxHeaters];
+    int ArchonHeaterTarget[ArchonMaxHeaters];
+    int ArchonHeaterSensor[ArchonMaxHeaters];
+    int ArchonHeaterPTerm[ArchonMaxHeaters];
+    int ArchonHeaterITerm[ArchonMaxHeaters];
+    int ArchonHeaterDTerm[ArchonMaxHeaters];
+    int ArchonHeaterITermLimit[ArchonMaxHeaters];
+    int ArchonHeaterRamp[ArchonMaxHeaters];
+    int ArchonHeaterRampRate[ArchonMaxHeaters];
+    int ArchonHeaterOutput[ArchonMaxHeaters];
+    int ArchonHeaterPTermRead[ArchonMaxHeaters];
+    int ArchonHeaterITermRead[ArchonMaxHeaters];
+    int ArchonHeaterDTermRead[ArchonMaxHeaters];
+    int ArchonSensorLabel[ArchonMaxSensors];
+    int ArchonSensorType[ArchonMaxSensors];
+    int ArchonSensorCurrent[ArchonMaxSensors];
+    int ArchonSensorLowerLimit[ArchonMaxSensors];
+    int ArchonSensorUpperLimit[ArchonMaxSensors];
+    int ArchonSensorFilter[ArchonMaxSensors];
+    int ArchonSensorTemp[ArchonMaxSensors];
+    int ArchonHeaterUpdateTime;
     int ArchonConfigFile;
 #define FIRST_ARCHON_PARAM ArchonMessage
 #define LAST_ARCHON_PARAM ArchonConfigFile
@@ -169,6 +230,8 @@ class ArchonCCD : public ADDriver {
     bool checkStatus(bool status, const char *message);
     asynStatus setupAcquisition(bool commit=false);
     asynStatus setupShutter(int command);
+    asynStatus setupHeater(int heater);
+    asynStatus setupSensor(int sensor);
     asynStatus setupPowerAndBias();
     asynStatus setupFramePoll(double period);
     asynStatus setupFileWrite(bool trigger=false);
@@ -263,6 +326,36 @@ class ArchonCCD : public ADDriver {
      */
     static const epicsInt32 AFRAW;
 
+    /**
+     * List of sensor names.
+     */
+    static const epicsInt32 ASA;
+    static const epicsInt32 ASB;
+    static const epicsInt32 ASC;
+
+    /**
+     * List of sensor types.
+     */
+    static const epicsInt32 ASDT670;
+    static const epicsInt32 ASDT470;
+    static const epicsInt32 ASRTD100;
+    static const epicsInt32 ASRTD400;
+    static const epicsInt32 ASRTD1000;
+    static const epicsInt32 ASRTD2000;
+
+    /**
+     * List of filters
+     */
+    static const epicsInt32 ASDisabled;
+    static const epicsInt32 ASFilter2;
+    static const epicsInt32 ASFilter4;
+    static const epicsInt32 ASFilter8;
+    static const epicsInt32 ASFilter16;
+    static const epicsInt32 ASFilter32;
+    static const epicsInt32 ASFilter64;
+    static const epicsInt32 ASFilter128;
+    static const epicsInt32 ASFilter256;
+
     // seconds per timing core clock
     static const epicsFloat64 SECS_PER_CLOCK;
     static const epicsUInt64 CLOCK_PER_MSEC;
@@ -304,6 +397,8 @@ class ArchonCCD : public ADDriver {
     bool mBiasCache;
     int mBiasChannelCache;
     float mBiasSetpointCache;
+    Pds::Archon::HeaterConfig mHeaterCache[ArchonMaxHeaters];
+    Pds::Archon::SensorConfig mSensorCache[ArchonMaxSensors];
 
     bool mInitOK;
 };
