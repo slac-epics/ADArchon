@@ -107,7 +107,7 @@ record(ai, "$(P)$(R)SEN$(SEN):ArchonSensorTemperature_RBV")
 {
     field(DTYP, "asynFloat64")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_SENSOR_TEMP_$(SEN)")
-    field(PREC, "6")
+    field(PREC, "3")
     field(EGU,  "C")
     field(SCAN, "I/O Intr")
 }

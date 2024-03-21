@@ -54,7 +54,7 @@ record(ao, "$(P)$(R)HTR$(HTR):ArchonHeaterForceLevel")
     field(DTYP, "asynFloat64")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_FORCELEVEL_$(HTR)")
     field(PREC, "3")
-    field(EGU,  "W")
+    field(EGU,  "V")
     field(VAL,  "0.0")
     info( autosaveFields, "VAL" )
 }
@@ -64,7 +64,7 @@ record(ai, "$(P)$(R)HTR$(HTR):ArchonHeaterForceLevel_RBV")
     field(DTYP, "asynFloat64")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_FORCELEVEL_$(HTR)")
     field(PREC, "3")
-    field(EGU,  "W")
+    field(EGU,  "V")
     field(SCAN, "I/O Intr")
 }
 
@@ -74,7 +74,7 @@ record(ao, "$(P)$(R)HTR$(HTR):ArchonHeaterLimit")
     field(DTYP, "asynFloat64")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_LIMIT_$(HTR)")
     field(PREC, "3")
-    field(EGU,  "W")
+    field(EGU,  "V")
     field(VAL,  "25.0")
     info( autosaveFields, "VAL" )
 }
@@ -84,7 +84,7 @@ record(ai, "$(P)$(R)HTR$(HTR):ArchonHeaterLimit_RBV")
     field(DTYP, "asynFloat64")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_LIMIT_$(HTR)")
     field(PREC, "3")
-    field(EGU,  "W")
+    field(EGU,  "V")
     field(SCAN, "I/O Intr")
 }
 
@@ -143,6 +143,7 @@ record(longout, "$(P)$(R)HTR$(HTR):ArchonHeaterRampRate")
     field(PINI, "1")
     field(DTYP, "asynInt32")
     field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_RAMPRATE_$(HTR)")
+    field(EGU,  "mK")
     info( autosaveFields, "VAL" )
 }
 
@@ -150,6 +151,7 @@ record(longin, "$(P)$(R)HTR$(HTR):ArchonHeaterRampRate_RBV")
 {
     field(DTYP, "asynInt32")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_HEATER_RAMPRATE_$(HTR)")
+    field(EGU,  "mK")
     field(SCAN, "I/O Intr")
 }
 
