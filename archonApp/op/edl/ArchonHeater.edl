@@ -1,0 +1,924 @@
+4 0 1
+beginScreenProperties
+major 4
+minor 0
+release 1
+x 602
+y 392
+w 366
+h 340
+font "helvetica-medium-r-12.0"
+ctlFont "helvetica-medium-r-12.0"
+btnFont "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 3
+textColor index 14
+ctlFgColor1 index 25
+ctlFgColor2 index 15
+ctlBgColor1 index 5
+ctlBgColor2 index 12
+topShadowColor index 1
+botShadowColor index 13
+title "Archon Heater Channel"
+showGrid
+snapToGrid
+gridSize 4
+disableScroll
+endScreenProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 8
+w 350
+h 325
+lineColor index 14
+fillColor index 14
+lineWidth 0
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 136
+w 88
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterForceLevel"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 184
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterPterm_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 208
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterIterm_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 184
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "P Term"
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 208
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "I Term"
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 64
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Target Temp"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 88
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterLimit_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 88
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Voltage Limit"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 112
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterForce_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 112
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Force Output"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 160
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterSensor_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 160
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Sensor"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 88
+w 88
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterLimit"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 184
+w 88
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterPterm"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 208
+w 88
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterIterm"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 64
+w 88
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterTarget"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 16
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 12
+useDisplayBg
+value {
+  "Heater $(HTR) Label"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 16
+w 88
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterLabel"
+format "string"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 15
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 16
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterLabel_RBV"
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 15
+fgAlarm
+bgColor index 12
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 144
+y 40
+w 88
+h 20
+fgColor index 14
+bgColor index 63
+inconsistentColor index 12
+topShadowColor index 2
+botShadowColor index 12
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterEnable"
+indicatorPv "$(P)$(R)HTR$(HTR):ArchonHeaterEnable"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 40
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterEnable_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 40
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Output Enable"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 64
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterTarget_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 144
+y 112
+w 88
+h 20
+fgColor index 14
+bgColor index 63
+inconsistentColor index 12
+topShadowColor index 2
+botShadowColor index 12
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterForce"
+indicatorPv "$(P)$(R)HTR$(HTR):ArchonHeaterForce"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 136
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Force Level"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 136
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterForceLevel_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 144
+y 160
+w 88
+h 20
+fgColor index 14
+bgColor index 63
+inconsistentColor index 12
+topShadowColor index 2
+botShadowColor index 12
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterSensor"
+indicatorPv "$(P)$(R)HTR$(HTR):ArchonHeaterSensor"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 232
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "I Term Limit"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 232
+w 88
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterItermLimit"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 232
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterItermLimit_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 256
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "D Term"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 256
+w 88
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterDterm"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 256
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterDterm_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 280
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Ramp"
+}
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 144
+y 280
+w 88
+h 20
+fgColor index 14
+bgColor index 63
+inconsistentColor index 12
+topShadowColor index 2
+botShadowColor index 12
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterRamp"
+indicatorPv "$(P)$(R)HTR$(HTR):ArchonHeaterRamp"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 280
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterRamp_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 304
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Ramp Rate"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 304
+w 88
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterRampRate"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 304
+w 92
+h 20
+controlPv "$(P)$(R)HTR$(HTR):ArchonHeaterRampRate_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+

@@ -1,0 +1,449 @@
+4 0 1
+beginScreenProperties
+major 4
+minor 0
+release 1
+x 560
+y 581
+w 366
+h 171
+font "helvetica-medium-r-12.0"
+ctlFont "helvetica-medium-r-12.0"
+btnFont "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 3
+textColor index 14
+ctlFgColor1 index 25
+ctlFgColor2 index 15
+ctlBgColor1 index 5
+ctlBgColor2 index 12
+topShadowColor index 1
+botShadowColor index 13
+title "Archon Sensor Channel"
+showGrid
+snapToGrid
+gridSize 4
+disableScroll
+endScreenProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 8
+y 8
+w 350
+h 155
+lineColor index 14
+fillColor index 14
+lineWidth 0
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 112
+w 88
+h 20
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorUpperLimit"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 64
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Current"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 88
+w 92
+h 20
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorLowerLimit_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 88
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Lower Limit"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 112
+w 92
+h 20
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorUpperLimit_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 112
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Upper Limit"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 88
+w 88
+h 20
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorLowerLimit"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 64
+w 88
+h 20
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorCurrent"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 16
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 12
+useDisplayBg
+value {
+  "Sensor $(SEN) Label"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 16
+w 88
+h 20
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorLabel"
+format "string"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 15
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 16
+w 92
+h 20
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorLabel_RBV"
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 15
+fgAlarm
+bgColor index 12
+limitsFromDb
+nullColor index 0
+useHexPrefix
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 144
+y 40
+w 88
+h 20
+fgColor index 14
+bgColor index 63
+inconsistentColor index 12
+topShadowColor index 2
+botShadowColor index 12
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorType"
+indicatorPv "$(P)$(R)SEN$(SEN):ArchonSensorType"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 40
+w 92
+h 20
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorType_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 40
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Type"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 64
+w 92
+h 20
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorCurrent_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 136
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Filter"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 136
+w 92
+h 20
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorFilter_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Menu Button)
+object activeMenuButtonClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 144
+y 136
+w 88
+h 20
+fgColor index 14
+bgColor index 63
+inconsistentColor index 12
+topShadowColor index 2
+botShadowColor index 12
+controlPv "$(P)$(R)SEN$(SEN):ArchonSensorFilter"
+indicatorPv "$(P)$(R)SEN$(SEN):ArchonSensorFilter"
+font "helvetica-medium-r-12.0"
+endObjectProperties
+

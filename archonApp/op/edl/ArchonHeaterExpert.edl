@@ -1,0 +1,1443 @@
+4 0 1
+beginScreenProperties
+major 4
+minor 0
+release 1
+x 737
+y 211
+w 1140
+h 600
+font "helvetica-medium-r-12.0"
+ctlFont "helvetica-medium-r-12.0"
+btnFont "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 3
+textColor index 14
+ctlFgColor1 index 25
+ctlFgColor2 index 15
+ctlBgColor1 index 5
+ctlBgColor2 index 12
+topShadowColor index 1
+botShadowColor index 13
+title "Archon HeaterX Module"
+showGrid
+snapToGrid
+gridSize 4
+disableScroll
+endScreenProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 0
+y 4
+w 1140
+h 24
+lineColor index 2
+fill
+fillColor index 2
+lineWidth 0
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 8
+y 64
+w 366
+h 340
+fgColor index 14
+bgColor index 0
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\\\emb-trig=0"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "archonScreens/ArchonHeater.edl"
+}
+menuLabel {
+  0 "Archon Heater"
+}
+symbols {
+  0 "HTR=A"
+}
+noScroll
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 380
+y 64
+w 366
+h 340
+fgColor index 14
+bgColor index 0
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\\\emb-trig=0"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "archonScreens/ArchonHeater.edl"
+}
+menuLabel {
+  0 "Archon Heater"
+}
+symbols {
+  0 "HTR=B"
+}
+noScroll
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 765
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)ArchonHeaterMessage_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 280
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 280
+h 20
+controlPv "$(P)$(R)MOD1:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD1:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 40
+w 100
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Module Info"
+}
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 0
+y 5
+w 1140
+h 25
+font "helvetica-medium-r-18.0"
+fontAlign "center"
+fgColor index 27
+bgColor index 3
+useDisplayBg
+value {
+  "Archon Heater Control - $(P)$(R)"
+}
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD2:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD2:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD3:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD3:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD4:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD4:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD5:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD5:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD6:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD6:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD7:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD7:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD8:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD8:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD9:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD9:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD10:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD10:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 125
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 125
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD11:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD11:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 120
+y 40
+w 325
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 120
+y 40
+w 325
+h 20
+controlPv "$(P)$(R)MOD12:ArchonModuleInfo_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD12:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 450
+y 40
+w 100
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Module Temp"
+}
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD1:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD1:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD2:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD2:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD3:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD3:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD4:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD4:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD5:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD5:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD6:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD6:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD7:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD7:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD8:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD8:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD9:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD9:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD10:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD10:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD11:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD11:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Group)
+object activeGroupClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 565
+y 40
+w 76
+h 20
+
+beginGroup
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 565
+y 40
+w 75
+h 20
+controlPv "$(P)$(R)MOD12:ArchonModuleTemp_RBV"
+format "string"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+showUnits
+newPos
+objType "controls"
+endObjectProperties
+
+endGroup
+
+visPv "$(P)$(R)MOD12:ArchonModuleType_RBV"
+visMin "11"
+visMax "12"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 650
+y 40
+w 100
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Module Status"
+}
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 8
+y 412
+w 366
+h 171
+fgColor index 14
+bgColor index 0
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\\\emb-trig=0"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "archonScreens/ArchonSensor.edl"
+}
+menuLabel {
+  0 "Archon Sensor"
+}
+symbols {
+  0 "SEN=A"
+}
+noScroll
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 380
+y 412
+w 366
+h 171
+fgColor index 14
+bgColor index 0
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\\\emb-trig=0"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "archonScreens/ArchonSensor.edl"
+}
+menuLabel {
+  0 "Archon Sensor"
+}
+symbols {
+  0 "SEN=B"
+}
+noScroll
+endObjectProperties
+
+# (Embedded Window)
+object activePipClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 752
+y 412
+w 366
+h 171
+fgColor index 14
+bgColor index 0
+topShadowColor index 0
+botShadowColor index 14
+displaySource "menu"
+filePv "LOC\\\\emb-trig=0"
+sizeOfs 5
+numDsps 1
+displayFileName {
+  0 "archonScreens/ArchonSensor.edl"
+}
+menuLabel {
+  0 "Archon Sensor"
+}
+symbols {
+  0 "SEN=C"
+}
+noScroll
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 760
+y 104
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 12
+useDisplayBg
+value {
+  "Update Interval"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 888
+y 104
+w 88
+h 20
+controlPv "$(P)$(R)ArchonHeaterUpdateTime"
+format "string"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 15
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 992
+y 104
+w 92
+h 20
+controlPv "$(P)$(R)ArchonHeaterUpdateTime_RBV"
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 15
+fgAlarm
+bgColor index 12
+limitsFromDb
+nullColor index 0
+useHexPrefix
+showUnits
+newPos
+objType "monitors"
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 760
+y 80
+w 366
+h 20
+font "helvetica-bold-r-14.0"
+fontAlign "center"
+fgColor index 14
+bgColor index 12
+useDisplayBg
+value {
+  "Global Settings"
+}
+endObjectProperties
+
