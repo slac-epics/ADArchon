@@ -225,9 +225,6 @@ const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnums[] = {
   {OnOffEnums,
    sizeofArray(OnOffEnums),
    ArchonPowerSwitchString},
-  {OnOffEnums,
-   sizeofArray(OnOffEnums),
-   ArchonBiasSwitchString},
   {EnableDisableEnums,
    sizeofArray(EnableDisableEnums),
    ArchonLineScanModeString},
@@ -265,6 +262,9 @@ const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnumsSpecial[] = {
    ArchonModuleTypeString},
   {OnOffEnums,
    sizeofArray(OnOffEnums),
+   ArchonBiasSwitchString},
+  {OnOffEnums,
+   sizeofArray(OnOffEnums),
    ArchonHeaterEnableString},
   {OnOffEnums,
    sizeofArray(OnOffEnums),
@@ -284,6 +284,8 @@ const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnumsSpecial[] = {
 };
 
 const size_t ArchonCCD::ArchonEnumsSpecialSize = sizeofArray(ArchonCCD::ArchonEnumsSpecial);
+
+const char ArchonCCD::ArchonBiasBankNames[] = {'N', 'P'};
 
 unsigned ArchonCCD::archonTimeConvert(double time_in_sec)
 {
@@ -352,10 +354,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   unsigned clkat = 2000;
   unsigned clkst = 30;
   unsigned clkstm1 = 29;
-  float biasSetpoint = -40.0;
   float biasVoltage, biasCurrent;
   double framePollingPeriod = 0.001;
-  int biasChan = ABNV1;
   char tempString[256];
   std::string serialNumber;
   std::string firmwareVersion;
@@ -376,6 +376,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   double sensorTemp;
   double heaterOutput;
   unsigned termValue;
+  int biasChanId;
+  Pds::Archon::BiasConfig biasConfig;
   Pds::Archon::HeaterConfig heaterConfig;
   Pds::Archon::SensorConfig sensorConfig;
 
@@ -428,10 +430,40 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonClearTimeString,        asynParamFloat64, &ArchonClearTime);
   createParam(ArchonReadOutTimeString,      asynParamFloat64, &ArchonReadOutTime);
   createParam(ArchonBiasChanString,         asynParamInt32,   &ArchonBiasChan);
-  createParam(ArchonBiasSetpointString,     asynParamFloat64, &ArchonBiasSetpoint);
-  createParam(ArchonBiasSwitchString,       asynParamInt32,   &ArchonBiasSwitch);
-  createParam(ArchonBiasVoltageString,      asynParamFloat64, &ArchonBiasVoltage);
-  createParam(ArchonBiasCurrentString,      asynParamFloat64, &ArchonBiasCurrent);
+  for (unsigned nBiasBank = 0; nBiasBank < ArchonMaxBiasBanks; nBiasBank++) {
+    for (unsigned nBiasChan = 0; nBiasChan < ArchonMaxBiasChans; nBiasChan++) {
+      epicsSnprintf(tempString, sizeof(tempString), "%s_%c%d",
+                    ArchonBiasLabelString,
+                    ArchonBiasBankNames[nBiasBank],
+                    nBiasChan+1);
+      createParam(tempString,               asynParamOctet,   &ArchonBiasLabel[nBiasBank][nBiasChan]);
+      epicsSnprintf(tempString, sizeof(tempString), "%s_%c%d",
+                    ArchonBiasSetpointString,
+                    ArchonBiasBankNames[nBiasBank],
+                    nBiasChan+1);
+      createParam(tempString,               asynParamFloat64, &ArchonBiasSetpoint[nBiasBank][nBiasChan]);
+      epicsSnprintf(tempString, sizeof(tempString), "%s_%c%d",
+                    ArchonBiasSwitchString,
+                    ArchonBiasBankNames[nBiasBank],
+                    nBiasChan+1);
+      createParam(tempString,               asynParamInt32,   &ArchonBiasSwitch[nBiasBank][nBiasChan]);
+      epicsSnprintf(tempString, sizeof(tempString), "%s_%c%d",
+                    ArchonBiasOrderString,
+                    ArchonBiasBankNames[nBiasBank],
+                    nBiasChan+1);
+      createParam(tempString,               asynParamInt32,   &ArchonBiasOrder[nBiasBank][nBiasChan]);
+      epicsSnprintf(tempString, sizeof(tempString), "%s_%c%d",
+                    ArchonBiasVoltageString,
+                    ArchonBiasBankNames[nBiasBank],
+                    nBiasChan+1);
+      createParam(tempString,               asynParamFloat64, &ArchonBiasVoltage[nBiasBank][nBiasChan]);
+      epicsSnprintf(tempString, sizeof(tempString), "%s_%c%d",
+                    ArchonBiasCurrentString,
+                    ArchonBiasBankNames[nBiasBank],
+                    nBiasChan+1);
+      createParam(tempString,               asynParamFloat64, &ArchonBiasCurrent[nBiasBank][nBiasChan]);
+    }
+  }
   createParam(ArchonFramePollPeriodString,  asynParamFloat64, &ArchonFramePollPeriod);
   createParam(ArchonTotalTaplinesString,    asynParamInt32,   &ArchonTotalTaplines);
   createParam(ArchonActiveTaplinesString,   asynParamInt32,   &ArchonActiveTaplines);
@@ -539,7 +571,6 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
     checkStatus(mDrv->set_clock_at(clkat), "Unable to set clock AT");
     checkStatus(mDrv->set_clock_st(clkst), "Unable to set clock ST");
     checkStatus(mDrv->set_clock_stm1(clkstm1), "Unable to set clock STM1");
-    checkStatus(mDrv->set_bias(biasChan, false, biasSetpoint), "Unable to set bias settings");
     checkStatus(mDrv->set_external_trigger(false), "Unable to set trigger");
     // set the frame polling period
     setupFramePoll(framePollingPeriod);
@@ -605,14 +636,27 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
       setDoubleParam(ArchonSensorTemp[nSensor], sensorTemp);
     }
 
-    // Get the bias voltage and current
-    mBiasCache = false;
-    mBiasChannelCache = biasChan;
-    mBiasSetpointCache = biasSetpoint;
-    checkStatus(mDrv->get_bias(biasChan, &biasVoltage, &biasCurrent),
-                "Unable to read bias voltage and current");
-    setDoubleParam(ArchonBiasVoltage, biasVoltage);
-    setDoubleParam(ArchonBiasCurrent, biasCurrent);
+    // Get the bias config, voltage, and current
+    for (unsigned nBiasBank = 0; nBiasBank < ArchonMaxBiasBanks; nBiasBank++) {
+      for (unsigned nBiasChan = 0; nBiasChan < ArchonMaxBiasChans; nBiasChan++) {
+        // calculate the channel id
+        biasChanId = ArchonBiasBankNames[nBiasBank] == 'N' ? -(nBiasChan+1) : nBiasChan+1;
+        // get the bias config
+        checkStatus(mDrv->get_bias_config(biasChanId, &biasConfig),
+                    "Unable to read bias config");
+        setStringParam(ArchonBiasLabel[nBiasBank][nBiasChan], biasConfig.label);
+        setDoubleParam(ArchonBiasSetpoint[nBiasBank][nBiasChan], biasConfig.voltage);
+        setIntegerParam(ArchonBiasSwitch[nBiasBank][nBiasChan], biasConfig.enable);
+        setIntegerParam(ArchonBiasOrder[nBiasBank][nBiasChan], biasConfig.order);
+        // cache the bias config
+        mBiasCache[nBiasBank][nBiasChan] = biasConfig;
+        // get the bias readback values
+        checkStatus(mDrv->get_bias(biasChanId, &biasVoltage, &biasCurrent),
+                    "Unable to read bias voltage and current");
+        setDoubleParam(ArchonBiasVoltage[nBiasBank][nBiasChan], biasVoltage);
+        setDoubleParam(ArchonBiasCurrent[nBiasBank][nBiasChan], biasCurrent);
+      }
+    }
 
     // initialize the per module parameters
     for (unsigned nMod = 0; nMod < ArchonMaxModules; nMod++) {
@@ -735,9 +779,6 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   status |= setIntegerParam(ArchonClockAt, clkat);
   status |= setIntegerParam(ArchonClockSt, clkst);
   status |= setIntegerParam(ArchonClockStm1, clkstm1);
-  status |= setIntegerParam(ArchonBiasChan, biasChan);
-  status |= setDoubleParam (ArchonBiasSetpoint, biasSetpoint);
-  status |= setIntegerParam(ArchonBiasSwitch, false);
   status |= setDoubleParam (ArchonFramePollPeriod, framePollingPeriod);
   status |= setIntegerParam(ArchonTotalTaplines, totalTaplines);
   status |= setIntegerParam(ArchonActiveTaplines, activeTaplines);
@@ -913,6 +954,8 @@ asynStatus ArchonCCD::readEnum(asynUser *pasynUser, char *strings[], int values[
 
 asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
+  int biasBank = -1;
+  int biasChan = -1;
   int heater = -1;
   int sensor = -1;
   int function = pasynUser->reason;
@@ -926,6 +969,21 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
   // set param and save backup of old value
   getIntegerParam(function, &oldValue);
   status = setIntegerParam(function, value);
+
+  /* Check if the parameter is a bias one. */
+  for (unsigned nBiasBank = 0; nBiasBank < ArchonMaxBiasBanks; nBiasBank++) {
+    for (unsigned nBiasChan = 0; nBiasChan < ArchonMaxBiasChans; nBiasChan++) {
+      if (function == ArchonBiasSwitch[nBiasBank][nBiasChan]) {
+        biasChan = nBiasChan;
+        biasBank = nBiasBank;
+        break;
+      } else if (function == ArchonBiasOrder[nBiasBank][nBiasChan]) {
+        biasChan = nBiasChan;
+        biasBank = nBiasBank;
+        break;
+      }
+    }
+  }
 
   /* Check if the parameter is a heater one. */
   for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
@@ -1041,6 +1099,10 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
     status = setupSensor(sensor);
     if (status != asynSuccess) setDoubleParam(function, oldValue);
   }
+  else if ((biasBank >= 0) && (biasChan >= 0)) {
+    status = setupBias(biasBank, biasChan);
+    if (status != asynSuccess) setIntegerParam(function, oldValue);
+  }
   else if ((function == ADNumExposures)       || (function == ADNumImages)        ||
            (function == ADImageMode)                                              ||
            (function == ADBinX)               || (function == ADBinY)             ||
@@ -1055,9 +1117,8 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
     status = setupAcquisition();
     if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
-  else if ((function == ArchonPowerSwitch)  || (function == ArchonBiasChan) ||
-           (function == ArchonBiasSwitch)) {
-    status = setupPowerAndBias();
+  else if (function == ArchonPowerSwitch) {
+    status = setupPower();
     if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
   else if (function == ADShutterControl) {
@@ -1124,6 +1185,8 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
  * \param[in] value Value to write. */
 asynStatus ArchonCCD::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
+  int biasBank = -1;
+  int biasChan = -1;
   int heater = -1;
   int sensor = -1;
   int function = pasynUser->reason;
@@ -1136,6 +1199,17 @@ asynStatus ArchonCCD::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 
   /* Set the parameter and readback in the parameter library.  */
   status = setDoubleParam(function, value);
+
+  /* Check if the parameter is a bias one. */
+  for (unsigned nBiasChan = 0; nBiasChan < ArchonMaxBiasChans; nBiasChan++) {
+    for (unsigned nBiasBank = 0; nBiasBank < ArchonMaxBiasBanks; nBiasBank++) {
+      if (function == ArchonBiasSetpoint[nBiasBank][nBiasChan]) {
+        biasChan = nBiasChan;
+        biasBank = nBiasBank;
+        break;
+      }
+    }
+  }
 
   /* Check if the parameter is a heater one. */
   for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
@@ -1186,15 +1260,15 @@ asynStatus ArchonCCD::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
     status = setupAcquisition();
     if (status != asynSuccess) setDoubleParam(function, oldValue);
   }
-  else if (function == ArchonBiasSetpoint) {
-    status = setupPowerAndBias();
-    if (status != asynSuccess) setDoubleParam(function, oldValue);
-  }
   else if (function == ArchonMinBatchPeriod) {
     mMinBatchPeriod = archonClockConvert(value);
   }
   else if (function == ArchonFramePollPeriod) {
     status = setupFramePoll(value);
+    if (status != asynSuccess) setDoubleParam(function, oldValue);
+  }
+  else if ((biasBank >= 0) && (biasChan >= 0)) {
+    status = setupBias(biasBank, biasChan);
     if (status != asynSuccess) setDoubleParam(function, oldValue);
   }
   else if (heater >= 0) {
@@ -1229,6 +1303,8 @@ asynStatus ArchonCCD::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 asynStatus ArchonCCD::writeOctet(asynUser *pasynUser, const char *value,
                                  size_t nChars, size_t *nActual)
 {
+  int biasBank = -1;
+  int biasChan = -1;
   int heater = -1;
   int sensor = -1;
   int function = pasynUser->reason;
@@ -1242,6 +1318,17 @@ asynStatus ArchonCCD::writeOctet(asynUser *pasynUser, const char *value,
   /* Set the parameter and readback in the parameter library.  */
   status = setStringParam(function, value);
   *nActual = nChars;
+
+  /* Check if the parameter is a bias one. */
+  for (unsigned nBiasBank = 0; nBiasBank < ArchonMaxBiasBanks; nBiasBank++) {
+    for (unsigned nBiasChan = 0; nBiasChan < ArchonMaxBiasChans; nBiasChan++) {
+      if (function == ArchonBiasLabel[nBiasBank][nBiasChan]) {
+        biasChan = nBiasChan;
+        biasBank = nBiasBank;
+        break;
+      }
+    }
+  }
 
   /* Check if the parameter is a heater one. */
   for (unsigned nHeater = 0; nHeater < ArchonMaxHeaters; nHeater++) {
@@ -1259,7 +1346,11 @@ asynStatus ArchonCCD::writeOctet(asynUser *pasynUser, const char *value,
     }
   }
 
-  if (heater >= 0) {
+  if ((biasBank >= 0) && (biasChan >= 0)) {
+    status = setupBias(biasBank, biasChan);
+    if (status != asynSuccess) setStringParam(function, oldValue);
+  }
+  else if (heater >= 0) {
     status = setupHeater(heater);
     if (status != asynSuccess) setStringParam(function, oldValue);
   }
@@ -1427,7 +1518,6 @@ bool ArchonCCD::checkStatus(bool status, const char *message)
 
 void ArchonCCD::statusTask(void)
 {
-  int biasChan;
   Pds::Archon::PowerMode powerMode;
   bool isgood;
   bool overheat;
@@ -1517,12 +1607,16 @@ void ArchonCCD::statusTask(void)
                       "Unable to read sensor temperature");
           setDoubleParam(ArchonSensorTemp[nSensor], sensorTemp);
         }
-        // Read bias voltage and current
-        getIntegerParam(ArchonBiasChan, &biasChan);
-        checkStatus(mDrv->get_bias(biasChan, &voltage, &current),
-                    "Unable to get bias voltage and current");
-        setDoubleParam(ArchonBiasVoltage, voltage);
-        setDoubleParam(ArchonBiasCurrent, current);
+        // Read bias voltages and currents
+        for (unsigned nBiasBank = 0; nBiasBank < ArchonMaxBiasBanks; nBiasBank++) {
+          for (unsigned nBiasChan = 0; nBiasChan < ArchonMaxBiasChans; nBiasChan++) {
+            checkStatus(mDrv->get_bias(ArchonBiasBankNames[nBiasBank] == 'N' ? -(nBiasChan+1) : nBiasChan+1,
+                                       &voltage, &current),
+                        "Unable to get bias voltage and current");
+            setDoubleParam(ArchonBiasVoltage[nBiasBank][nBiasChan], voltage);
+            setDoubleParam(ArchonBiasCurrent[nBiasBank][nBiasChan], current);
+          }
+        }
       }
 
       // Read detector status (idle, acquiring, error, etc.)
@@ -1810,14 +1904,11 @@ asynStatus ArchonCCD::setupSensor(int sensor)
   return asynSuccess;
 }
 
-asynStatus ArchonCCD::setupPowerAndBias()
+asynStatus ArchonCCD::setupPower()
 {
   int powerSwitch;
-  int biasChan;
-  int biasSwitch;
-  double biasSetpoint;
   Pds::Archon::PowerMode powerMode;
-  static const char *functionName = "setupPowerAndBias";
+  static const char *functionName = "setupPower";
 
   if (!mInitOK) {
     return asynDisabled;
@@ -1825,37 +1916,15 @@ asynStatus ArchonCCD::setupPowerAndBias()
 
   if (mAcquiringData) {
     asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
-              "%s:%s: Unable to set power and bias while acquiring\n",
+              "%s:%s: Unable to set power while acquiring\n",
               driverName, functionName);
-    setStringParam(ArchonPwrStatusMessage, "Cannot set power/bias while acquiring");
+    setStringParam(ArchonPwrStatusMessage, "Cannot set power while acquiring");
     return asynError;
   }
 
   getIntegerParam(ArchonPowerSwitch, &powerSwitch);
 
-  getIntegerParam(ArchonBiasChan, &biasChan);
-  getIntegerParam(ArchonBiasSwitch, &biasSwitch);
-  getDoubleParam (ArchonBiasSetpoint, &biasSetpoint);
-
   try {
-    // only setup the bias if it has changed since this can be slow
-    if ((biasChan != mBiasChannelCache) ||
-        (biasSwitch != mBiasCache) ||
-        (fabs(biasSetpoint - mBiasSetpointCache) > 0.05)) {
-      // Set the detector bias
-      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s: set_bias(%s, %s, %f)\n",
-                driverName, functionName,
-                BiasChannelEnums[biasChan].name.c_str(),
-                biasSwitch ?  "true" : "false",
-                biasSetpoint);
-      checkStatus(mDrv->set_bias(biasChan, biasSwitch, biasSetpoint), "Unable to set bias settings");
-      // update the cached values after setting
-      mBiasCache = biasSwitch;
-      mBiasChannelCache = biasChan;
-      mBiasSetpointCache = biasSetpoint;
-    }
-
     // update current power status from detector
     checkStatus(mDrv->fetch_status(), "Unable to fetch status info");
     powerMode = mDrv->status().power();
@@ -1874,6 +1943,64 @@ asynStatus ArchonCCD::setupPowerAndBias()
 
     /* For a successful setup, clear the error message. */
     setStringParam(ArchonPwrStatusMessage, " ");
+  } catch (const std::string &e) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: %s\n",
+              driverName, functionName, e.c_str());
+    setStringParam(ArchonPwrStatusMessage, e.c_str());
+    return asynError;
+  }
+
+  return asynSuccess;
+}
+
+asynStatus ArchonCCD::setupBias(int bank, int channel)
+{
+  int value;
+  int chanId = ArchonBiasBankNames[bank] == 'N' ? -(channel+1) : channel+1;
+  Pds::Archon::BiasConfig biasConfig;
+  static const char *functionName = "setupBias";
+
+  if (!mInitOK) {
+    return asynDisabled;
+  }
+
+  if (mAcquiringData) {
+    asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
+              "%s:%s: Unable to set bias while acquiring\n",
+              driverName, functionName);
+    setStringParam(ArchonPwrStatusMessage, "Cannot set bias while acquiring");
+    return asynError;
+  }
+
+  /* get the label value. */
+  getStringParam(ArchonBiasLabel[bank][channel], biasConfig.label);
+  /* get the setpoint value. */
+  getDoubleParam(ArchonBiasSetpoint[bank][channel], &biasConfig.voltage);
+  /* get the switch value. */
+  getIntegerParam(ArchonBiasSwitch[bank][channel], &value);
+  biasConfig.enable = value;
+  /* get the power-on order value. */
+  getIntegerParam(ArchonBiasOrder[bank][channel], &value);
+  biasConfig.order = value;
+
+  try {
+    // only setup the bias if it has changed since this can be slow
+    if (biasConfig != mBiasCache[bank][channel]) {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s: set_bias_config(%d, &biasConfig)\n",
+                driverName, functionName, chanId);
+      checkStatus(mDrv->set_bias_config(chanId, &biasConfig), "Unable to set bias settings");
+
+      /* For a successful setup, clear the error message. */
+      setStringParam(ArchonPwrStatusMessage, " ");
+      /* update the bias config cache. */
+      mBiasCache[bank][channel] = biasConfig;
+    } else {
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s: bias channel %d config not updated\n",
+                driverName, functionName, chanId);
+    }
   } catch (const std::string &e) {
     asynPrint(pasynUserSelf, ASYN_TRACE_ERROR,
               "%s:%s: %s\n",
@@ -2152,7 +2279,6 @@ void ArchonCCD::dataTask(void)
   int fileNumCapture;
   int fileNumCaptured;
   int readOutMode;
-  int biasChan;
   Pds::Archon::PowerMode powerMode;
   bool isgood;
   bool overheat;
@@ -2418,12 +2544,16 @@ void ArchonCCD::dataTask(void)
                         "Unable to read sensor temperature");
             setDoubleParam(ArchonSensorTemp[nSensor], sensorTemp);
           }
-          // Read bias voltage and current
-          getIntegerParam(ArchonBiasChan, &biasChan);
-          checkStatus(mDrv->get_bias(biasChan, &voltage, &current),
-                      "Unable to get bias voltage and current");
-          setDoubleParam(ArchonBiasVoltage, voltage);
-          setDoubleParam(ArchonBiasCurrent, current);
+          // Read bias voltages and currents
+          for (unsigned nBiasBank = 0; nBiasBank < ArchonMaxBiasBanks; nBiasBank++) {
+            for (unsigned nBiasChan = 0; nBiasChan < ArchonMaxBiasChans; nBiasChan++) {
+              checkStatus(mDrv->get_bias(ArchonBiasBankNames[nBiasBank] == 'N' ? -(nBiasChan+1) : nBiasChan+1,
+                                         &voltage, &current),
+                          "Unable to get bias voltage and current");
+              setDoubleParam(ArchonBiasVoltage[nBiasBank][nBiasChan], voltage);
+              setDoubleParam(ArchonBiasCurrent[nBiasBank][nBiasChan], current);
+            }
+          }
 
           // update last temp update time
           lastTempTime = currentTempTime;

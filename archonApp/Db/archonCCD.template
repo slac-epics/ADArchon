@@ -275,23 +275,7 @@ record(longin, "$(P)$(R)ArchonClockSTM1_RBV")
     field(SCAN, "I/O Intr")
 }
 
-# bias switch toggle
-record(bo, "$(P)$(R)ArchonBiasSwitch")
-{
-    field(PINI, "1")
-    field(DTYP, "asynInt32")
-    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SWITCH")
-    info( autosaveFields, "VAL" )
-}
-
-record(bi, "$(P)$(R)ArchonBiasSwitch_RBV")
-{
-    field(DTYP, "asynInt32")
-    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SWITCH")
-    field(SCAN, "I/O Intr")
-}
-
-# The bias channel to use
+# The bias channel that is the primary one
 record(mbbo, "$(P)$(R)ArchonBiasChan")
 {
     field(PINI, "1")
@@ -304,44 +288,6 @@ record(mbbi, "$(P)$(R)ArchonBiasChan_RBV")
 {
     field(DTYP, "asynInt32")
     field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_CHAN")
-    field(SCAN, "I/O Intr")
-}
-
-record(ao, "$(P)$(R)ArchonBiasSetpoint")
-{
-    field(PINI, "1")
-    field(DTYP, "asynFloat64")
-    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SETPOINT")
-    field(PREC, "1")
-    field(EGU,  "V")
-    field(VAL,  "-40.0")
-    info( autosaveFields, "VAL" )
-}
-
-record(ai, "$(P)$(R)ArchonBiasSetpoint_RBV")
-{
-    field(DTYP, "asynFloat64")
-    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SETPOINT")
-    field(PREC, "1")
-    field(EGU,  "V")
-    field(SCAN, "I/O Intr")
-}
-
-record(ai, "$(P)$(R)ArchonBiasVoltage_RBV")
-{
-    field(DTYP, "asynFloat64")
-    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_VOLTAGE")
-    field(PREC, "3")
-    field(EGU,  "V")
-    field(SCAN, "I/O Intr")
-}
-
-record(ai, "$(P)$(R)ArchonBiasCurrent_RBV")
-{
-    field(DTYP, "asynFloat64")
-    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_CURRENT")
-    field(PREC, "3")
-    field(EGU,  "A")
     field(SCAN, "I/O Intr")
 }
 

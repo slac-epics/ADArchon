@@ -1,0 +1,88 @@
+# These records are specific to archon detector one per XVBias channel
+record(waveform, "$(P)$(R)XVB$(XVB):ArchonBiasLabel")
+{
+    field(PINI, "1")
+    field(DTYP, "asynOctetWrite")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_LABEL_$(XVB)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    info( autosaveFields, "VAL" )
+}
+
+record(waveform, "$(P)$(R)XVB$(XVB):ArchonBiasLabel_RBV")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_LABEL_$(XVB)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(SCAN, "I/O Intr")
+}
+
+# bias switch toggle
+record(bo, "$(P)$(R)XVB$(XVB):ArchonBiasSwitch")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SWITCH_$(XVB)")
+    info( autosaveFields, "VAL" )
+}
+
+record(bi, "$(P)$(R)XVB$(XVB):ArchonBiasSwitch_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SWITCH_$(XVB)")
+    field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)XVB$(XVB):ArchonBiasSetpoint")
+{
+    field(PINI, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SETPOINT_$(XVB)")
+    field(PREC, "1")
+    field(EGU,  "V")
+    info( autosaveFields, "VAL" )
+}
+
+record(ai, "$(P)$(R)XVB$(XVB):ArchonBiasSetpoint_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_SETPOINT_$(XVB)")
+    field(PREC, "1")
+    field(EGU,  "V")
+    field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)$(R)XVB$(XVB):ArchonBiasOrder")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_ORDER_$(XVB)")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)XVB$(XVB):ArchonBiasOrder_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_ORDER_$(XVB)")
+    field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)XVB$(XVB):ArchonBiasVoltage_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_VOLTAGE_$(XVB)")
+    field(PREC, "3")
+    field(EGU,  "V")
+    field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(R)XVB$(XVB):ArchonBiasCurrent_RBV")
+{
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BIAS_CURRENT_$(XVB)")
+    field(PREC, "3")
+    field(EGU,  "A")
+    field(SCAN, "I/O Intr")
+}
+

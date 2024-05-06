@@ -15,6 +15,7 @@ DB += archonCCD.template
 DB += archonModule.template
 DB += archonHeater.template
 DB += archonSensor.template
+DB += archonBias.template
 DB += archonXmitDelay.template
 
 REQ += archonCCD_settings.req

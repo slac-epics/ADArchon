@@ -46,8 +46,10 @@
 #define ArchonClearTimeString         "ARCHON_CLEAR_TIME"
 #define ArchonReadOutTimeString       "ARCHON_READOUT_TIME"
 #define ArchonBiasChanString          "ARCHON_BIAS_CHAN"
+#define ArchonBiasLabelString         "ARCHON_BIAS_LABEL"
 #define ArchonBiasSetpointString      "ARCHON_BIAS_SETPOINT"
 #define ArchonBiasSwitchString        "ARCHON_BIAS_SWITCH"
+#define ArchonBiasOrderString         "ARCHON_BIAS_ORDER"
 #define ArchonBiasVoltageString       "ARCHON_BIAS_VOLTAGE"
 #define ArchonBiasCurrentString       "ARCHON_BIAS_CURRENT"
 #define ArchonFramePollPeriodString   "ARCHON_FRAME_POLL_PERIOD"
@@ -83,6 +85,8 @@
 #define ArchonSensorTempString        "ARCHON_SENSOR_TEMP"
 #define ArchonConfigFileString        "ARCHON_CONFIG_FILE"
 
+#define ArchonMaxBiasBanks 2
+#define ArchonMaxBiasChans 4
 #define ArchonMaxHeaters 2
 #define ArchonMaxSensors 3
 #define ArchonMaxModules 12
@@ -150,6 +154,7 @@ class ArchonCCD : public ADDriver {
     static const size_t ArchonEnumsSize;
     static const ArchonEnumSet ArchonEnumsSpecial[];
     static const size_t ArchonEnumsSpecialSize;
+    static const char ArchonBiasBankNames[];
 
     // parameters
     int ArchonMessage;
@@ -186,10 +191,12 @@ class ArchonCCD : public ADDriver {
     int ArchonClearTime;
     int ArchonReadOutTime;
     int ArchonBiasChan;
-    int ArchonBiasSetpoint;
-    int ArchonBiasSwitch;
-    int ArchonBiasVoltage;
-    int ArchonBiasCurrent;
+    int ArchonBiasLabel[ArchonMaxBiasBanks][ArchonMaxBiasChans];
+    int ArchonBiasSetpoint[ArchonMaxBiasBanks][ArchonMaxBiasChans];
+    int ArchonBiasSwitch[ArchonMaxBiasBanks][ArchonMaxBiasChans];
+    int ArchonBiasOrder[ArchonMaxBiasBanks][ArchonMaxBiasChans];
+    int ArchonBiasVoltage[ArchonMaxBiasBanks][ArchonMaxBiasChans];
+    int ArchonBiasCurrent[ArchonMaxBiasBanks][ArchonMaxBiasChans];
     int ArchonFramePollPeriod;
     int ArchonTotalTaplines;
     int ArchonActiveTaplines;
@@ -232,7 +239,8 @@ class ArchonCCD : public ADDriver {
     asynStatus setupShutter(int command);
     asynStatus setupHeater(int heater);
     asynStatus setupSensor(int sensor);
-    asynStatus setupPowerAndBias();
+    asynStatus setupBias(int bank, int channel);
+    asynStatus setupPower();
     asynStatus setupFramePoll(double period);
     asynStatus setupFileWrite(bool trigger=false);
     epicsUInt64 calcClearTime(epicsUInt64 at,
@@ -394,9 +402,7 @@ class ArchonCCD : public ADDriver {
     epicsUInt64 mMinBatchPeriod;
 
     // last set bias value cache
-    bool mBiasCache;
-    int mBiasChannelCache;
-    float mBiasSetpointCache;
+    Pds::Archon::BiasConfig mBiasCache[ArchonMaxBiasBanks][ArchonMaxBiasChans];
     Pds::Archon::HeaterConfig mHeaterCache[ArchonMaxHeaters];
     Pds::Archon::SensorConfig mSensorCache[ArchonMaxSensors];
 
