@@ -225,6 +225,9 @@ const ArchonCCD::ArchonEnumSet ArchonCCD::ArchonEnums[] = {
   {OnOffEnums,
    sizeofArray(OnOffEnums),
    ArchonPowerSwitchString},
+  {OnOffEnums,
+   sizeofArray(OnOffEnums),
+   ArchonBatchTimestampString},
   {EnableDisableEnums,
    sizeofArray(EnableDisableEnums),
    ArchonLineScanModeString},
@@ -348,6 +351,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   int status = asynSuccess;
   int binX=1, binY=1, minX=0, minY=0, sizeX, sizeY;
   unsigned batch=0;
+  unsigned batchTimestamp=0;
   unsigned preframeClear=0;
   unsigned idleClear=1;
   unsigned preframeSkip=22;
@@ -414,6 +418,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonPowerModeString,        asynParamInt32,   &ArchonPowerMode);
   createParam(ArchonPowerSwitchString,      asynParamInt32,   &ArchonPowerSwitch);
   createParam(ArchonReadOutModeString,      asynParamInt32,   &ArchonReadOutMode);
+  createParam(ArchonBatchTimestampString,   asynParamInt32,   &ArchonBatchTimestamp);
   createParam(ArchonBatchDelayString,       asynParamFloat64, &ArchonBatchDelay);
   createParam(ArchonMinBatchPeriodString,   asynParamFloat64, &ArchonMinBatchPeriod);
   createParam(ArchonNumBatchFramesString,   asynParamInt32,   &ArchonNumBatchFrames);
@@ -547,6 +552,9 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
 
     setStringParam(ArchonMessage, "Camera successfully initialized.");
     setStringParam(ArchonConfigFile, filePath);
+
+    // Get batched timestamp support
+    batchTimestamp = mDrv->has_batched_timestamps();
 
     // Get system info
     checkStatus(mDrv->fetch_system(), "Unable to fetch system info");
@@ -769,6 +777,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   status |= setIntegerParam(ArchonReadOutMode, ARImage);
   status |= setIntegerParam(ArchonBackplaneType, backplaneType);
   status |= setIntegerParam(ArchonBackplaneRev, backplaneRev);
+  status |= setIntegerParam(ArchonBatchTimestamp, batchTimestamp);
   status |= setDoubleParam (ArchonBatchDelay, 0.001);
   status |= setDoubleParam (ArchonMinBatchPeriod, 1./120.);
   status |= setIntegerParam(ArchonNumBatchFrames, batch);
@@ -2260,6 +2269,7 @@ void ArchonCCD::dataTask(void)
   epicsInt32 arrayCallbacks;
   epicsInt32 sizeX, sizeY;
   epicsInt32 sizeImage = 0;
+  epicsInt32 batchTimestamp = 0;
   epicsUInt64 timestampDelta = 0;
   epicsFloat64 batchDelay = 0.0;
   int adShutterMode;
@@ -2314,6 +2324,7 @@ void ArchonCCD::dataTask(void)
       // Read some parameters
       getIntegerParam(ADShutterMode, &adShutterMode);
       getIntegerParam(ArchonReadOutMode, &readOutMode);
+      getIntegerParam(ArchonBatchTimestamp, &batchTimestamp);
       getDoubleParam (ArchonBatchDelay, &batchDelay);
       getIntegerParam(ArchonNumBatchFrames, &numBatchFrames);
       getIntegerParam(ArchonLineScanMode, &lineScanMode);
@@ -2356,11 +2367,14 @@ void ArchonCCD::dataTask(void)
           // adjust the height and size parameters based on number of batched frames
           frameMeta.height /= imagesPerFrame;
           frameMeta.size /= imagesPerFrame;
-          // calculate approximate timestamp delta between each batched frame
-          timestampDelta = (frameMeta.fetch - frameMeta.timestamp - mReadOutTime) / (imagesPerFrame-1);
-          // use the minbatchperiod to correct the timestampDelta to remove contribution from long fetch delays
-          if (mMinBatchPeriod > 0) {
-            timestampDelta = (timestampDelta + (mMinBatchPeriod / 10)) - (timestampDelta + (mMinBatchPeriod / 10)) % mMinBatchPeriod;
+          // if the controller does not support timestamps for each line in a batch then estimate the delta
+          if (!batchTimestamp) {
+            // calculate approximate timestamp delta between each batched frame
+            timestampDelta = (frameMeta.fetch - frameMeta.timestamp - mReadOutTime) / (imagesPerFrame-1);
+            // use the minbatchperiod to correct the timestampDelta to remove contribution from long fetch delays
+            if (mMinBatchPeriod > 0) {
+              timestampDelta = (timestampDelta + (mMinBatchPeriod / 10)) - (timestampDelta + (mMinBatchPeriod / 10)) % mMinBatchPeriod;
+            }
           }
         }
         // process all the images included in the frame
@@ -2387,15 +2401,21 @@ void ArchonCCD::dataTask(void)
                       driverName, functionName, dataType);
             continue;
           }
+          // set the pImage pointer to the correct offset in the frame
+          pImage = ((epicsUInt8*) mFrameBuffer) + (sizeImage * i);
           // patch the frame metadata when dealing with batched frames
           if (imagesPerFrame>1) {
             // set the batch field to indicate the number it is in the batch
             frameMeta.batch = i;
-            // modify the timestamp to approximate the frame start time
-            frameMeta.timestamp += (i>0 ? timestampDelta : 0);
+            if (batchTimestamp) {
+              // if the controller supports per batch timestamps its the first 8 bytes of the data
+              frameMeta.timestamp = *(uint64_t*) pImage;
+            } else {
+              // modify the timestamp to approximate the frame start time
+              frameMeta.timestamp += (i>0 ? timestampDelta : 0);
+            }
           }
-          // set the pImage pointer to the correct offset in the frame
-          pImage = ((epicsUInt8*) mFrameBuffer) + (sizeImage * i);
+          // allocate the ndarray from the pool
           pArray = this->pNDArrayPool->alloc(nDims, dims, dataType, 0, NULL);
           // copy the data into the ndarray
           memcpy(pArray->pData, pImage, sizeImage);

@@ -122,6 +122,14 @@ record(mbbi, "$(P)$(R)ArchonReadOutMode_RBV")
     field(SCAN, "I/O Intr")
 }
 
+# batched timestamp on/off state (rbv only - set to on if controller supports it)
+record(bi, "$(P)$(R)ArchonBatchTimestamp_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_BATCH_TS")
+    field(SCAN, "I/O Intr")
+}
+
 # number of frames to batch into a single readout
 record(longout, "$(P)$(R)ArchonNumBatchFrames")
 {

@@ -30,6 +30,7 @@
 #define ArchonPowerModeString         "ARCHON_POWER_MODE"
 #define ArchonPowerSwitchString       "ARCHON_POWER_SWITCH"
 #define ArchonReadOutModeString       "ARCHON_READOUT_MODE"
+#define ArchonBatchTimestampString    "ARCHON_BATCH_TS"
 #define ArchonBatchDelayString        "ARCHON_BATCH_DELAY"
 #define ArchonMinBatchPeriodString    "ARCHON_MIN_BATCH_PERIOD"
 #define ArchonNumBatchFramesString    "ARCHON_NUM_BATCH_FRAMES"
@@ -175,6 +176,7 @@ class ArchonCCD : public ADDriver {
     int ArchonPowerMode;
     int ArchonPowerSwitch;
     int ArchonReadOutMode;
+    int ArchonBatchTimestamp;
     int ArchonBatchDelay;
     int ArchonMinBatchPeriod;
     int ArchonNumBatchFrames;
