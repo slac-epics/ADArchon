@@ -86,3 +86,14 @@ record(ai, "$(P)$(R)XVB$(XVB):ArchonBiasCurrent_RBV")
     field(SCAN, "I/O Intr")
 }
 
+# aliases to make some of the longer XVBias module PVs shorter
+alias("$(P)$(R)XVB$(XVB):ArchonBiasLabel",          "$(P)$(R)XVB$(XVB):BiasLabel")
+alias("$(P)$(R)XVB$(XVB):ArchonBiasLabel_RBV",      "$(P)$(R)XVB$(XVB):BiasLabel_RBV")
+alias("$(P)$(R)XVB$(XVB):ArchonBiasSwitch",         "$(P)$(R)XVB$(XVB):BiasSwitch")
+alias("$(P)$(R)XVB$(XVB):ArchonBiasSwitch_RBV",     "$(P)$(R)XVB$(XVB):BiasSwitch_RBV")
+alias("$(P)$(R)XVB$(XVB):ArchonBiasSetpoint",       "$(P)$(R)XVB$(XVB):BiasSP")
+alias("$(P)$(R)XVB$(XVB):ArchonBiasSetpoint_RBV",   "$(P)$(R)XVB$(XVB):BiasSP_RBV")
+alias("$(P)$(R)XVB$(XVB):ArchonBiasOrder",          "$(P)$(R)XVB$(XVB):BiasOrder")
+alias("$(P)$(R)XVB$(XVB):ArchonBiasOrder_RBV",      "$(P)$(R)XVB$(XVB):BiasOrder_RBV")
+alias("$(P)$(R)XVB$(XVB):ArchonBiasVoltage_RBV",    "$(P)$(R)XVB$(XVB):BiasVolt_RBV")
+alias("$(P)$(R)XVB$(XVB):ArchonBiasCurrent_RBV",    "$(P)$(R)XVB$(XVB):BiasCurr_RBV")

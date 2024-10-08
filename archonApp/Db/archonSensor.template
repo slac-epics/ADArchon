@@ -111,3 +111,18 @@ record(ai, "$(P)$(R)SEN$(SEN):ArchonSensorTemperature_RBV")
     field(EGU,  "C")
     field(SCAN, "I/O Intr")
 }
+
+# aliases to make some of the longer HeaterX module sensor PVs shorter
+alias("$(P)$(R)SEN$(SEN):ArchonSensorLabel",            "$(P)$(R)SEN$(SEN):SensorLabel")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorLabel_RBV",        "$(P)$(R)SEN$(SEN):SensorLabel_RBV")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorType",             "$(P)$(R)SEN$(SEN):SensorType")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorType_RBV",         "$(P)$(R)SEN$(SEN):SensorType_RBV")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorCurrent",          "$(P)$(R)SEN$(SEN):SensorCurrent")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorCurrent_RBV",      "$(P)$(R)SEN$(SEN):SensorCurrent_RBV")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorLowerLimit",       "$(P)$(R)SEN$(SEN):SensorLoLim")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorLowerLimit_RBV",   "$(P)$(R)SEN$(SEN):SensorLoLim_RBV")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorUpperLimit",       "$(P)$(R)SEN$(SEN):SensorHiLim")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorUpperLimit_RBV",   "$(P)$(R)SEN$(SEN):SensorHiLim_RBV")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorFilter",           "$(P)$(R)SEN$(SEN):SensorFilter")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorFilter_RBV",       "$(P)$(R)SEN$(SEN):SensorFilter_RBV")
+alias("$(P)$(R)SEN$(SEN):ArchonSensorTemperature_RBV",  "$(P)$(R)SEN$(SEN):SensorTemp_RBV")
