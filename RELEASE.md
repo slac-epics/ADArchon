@@ -12,10 +12,23 @@ files respectively, in the configure/ directory of the appropriate release of th
 
 Release Notes
 =============
-R1-0 (XX-Aug-2022)
+R1.0.0 (29-May-2024)
 ------------------
-* Basic support for full frame and full vertical binning modes.
+* Support for full frame and full vertical binning modes.
+* Basic support for frame batching to enable fast running.
+* Support for modifying settings for HeaterX and XVBias modules from the IOC.
+
+R1.0.1 (15-Aug-2024)
+------------------
+* Add expert screen for XVBias module.
+* Add support for using per line batch timestamps if controller supports it -> more reliable timestamsp in batch mode.
+
+R1.0.2 (16-Oct-2024)
+------------------
+* Add short PV alias for HeaterX and XVBias module PVs.
+* Update the version of ADCore and asyn.
 
 Future Releases
 ===============
-* Add frame batching support to enable fast running
+* Add support for missing module types.
+* Add readback of the remaining configuration parameters from the ACF file.
