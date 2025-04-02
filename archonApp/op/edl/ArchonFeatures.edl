@@ -1943,7 +1943,7 @@ major 4
 minor 0
 release 0
 x 148
-y 834
+y 858
 w 80
 h 20
 fgColor index 14
@@ -2006,7 +2006,7 @@ release 0
 x 5
 y 380
 w 350
-h 530
+h 554
 lineColor index 14
 fillColor index 14
 lineWidth 0
@@ -2680,7 +2680,7 @@ major 4
 minor 1
 release 1
 x 17
-y 834
+y 858
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -2700,7 +2700,7 @@ major 4
 minor 1
 release 1
 x 17
-y 858
+y 882
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -2720,7 +2720,7 @@ major 4
 minor 1
 release 1
 x 17
-y 882
+y 906
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -2740,7 +2740,7 @@ major 4
 minor 7
 release 0
 x 240
-y 834
+y 858
 w 80
 h 20
 controlPv "$(P)$(R)DataType_RBV"
@@ -3108,7 +3108,7 @@ major 4
 minor 7
 release 0
 x 240
-y 858
+y 882
 w 80
 h 20
 controlPv "$(P)$(R)ArchonClearTime_RBV"
@@ -3133,7 +3133,7 @@ major 4
 minor 7
 release 0
 x 240
-y 882
+y 906
 w 80
 h 20
 controlPv "$(P)$(R)ArchonReadOutTime_RBV"
@@ -6362,5 +6362,74 @@ replaceSymbols {
   0 1
 }
 icon
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 17
+y 834
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Pocket Pump"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 148
+y 834
+w 80
+h 20
+controlPv "$(P)$(R)ArchonPocketPump"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 240
+y 834
+w 80
+h 20
+controlPv "$(P)$(R)ArchonPocketPump_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
 endObjectProperties
 
