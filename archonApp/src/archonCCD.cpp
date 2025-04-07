@@ -2191,7 +2191,7 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
     asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
               "%s:%s: set_pocket_pump(%d)\n",
               driverName, functionName, pocketPump);
-    checkStatus(mDrv->set_pocket_pump(pocketPump), "unagle to set pocket pump count setting");
+    checkStatus(mDrv->set_pocket_pump(pocketPump), "unable to set pocket pump count setting");
 
     // Get image configuration info and apply it
     const Pds::Archon::Config& config = mDrv->config();
