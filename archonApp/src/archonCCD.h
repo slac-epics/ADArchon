@@ -44,6 +44,7 @@
 #define ArchonClockStm1String         "ARCHON_CLOCK_STM1"
 #define ArchonClockCtString           "ARCHON_CLOCK_CT"
 #define ArchonNumDummyPixelsString    "ARCHON_NUM_DUMMY_PIXELS"
+#define ArchonPocketPumpString        "ARCHON_POCKET_PUMP"
 #define ArchonClearTimeString         "ARCHON_CLEAR_TIME"
 #define ArchonReadOutTimeString       "ARCHON_READOUT_TIME"
 #define ArchonBiasChanString          "ARCHON_BIAS_CHAN"
@@ -190,6 +191,7 @@ class ArchonCCD : public ADDriver {
     int ArchonClockStm1;
     int ArchonClockCt;
     int ArchonNumDummyPixels;
+    int ArchonPocketPump;
     int ArchonClearTime;
     int ArchonReadOutTime;
     int ArchonBiasChan;

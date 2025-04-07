@@ -358,6 +358,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   unsigned clkat = 2000;
   unsigned clkst = 30;
   unsigned clkstm1 = 29;
+  unsigned pocketPump = 0;
   float biasVoltage, biasCurrent;
   double framePollingPeriod = 0.001;
   char tempString[256];
@@ -432,6 +433,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonClockStm1String,        asynParamInt32,   &ArchonClockStm1);
   createParam(ArchonClockCtString,          asynParamInt32,   &ArchonClockCt);
   createParam(ArchonNumDummyPixelsString,   asynParamInt32,   &ArchonNumDummyPixels);
+  createParam(ArchonPocketPumpString,       asynParamInt32,   &ArchonPocketPump);
   createParam(ArchonClearTimeString,        asynParamFloat64, &ArchonClearTime);
   createParam(ArchonReadOutTimeString,      asynParamFloat64, &ArchonReadOutTime);
   createParam(ArchonBiasChanString,         asynParamInt32,   &ArchonBiasChan);
@@ -580,6 +582,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
     checkStatus(mDrv->set_clock_st(clkst), "Unable to set clock ST");
     checkStatus(mDrv->set_clock_stm1(clkstm1), "Unable to set clock STM1");
     checkStatus(mDrv->set_external_trigger(false), "Unable to set trigger");
+    checkStatus(mDrv->set_pocket_pump(pocketPump), "Unable to set pocket pump conunt");
     // set the frame polling period
     setupFramePoll(framePollingPeriod);
 
@@ -788,6 +791,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   status |= setIntegerParam(ArchonClockAt, clkat);
   status |= setIntegerParam(ArchonClockSt, clkst);
   status |= setIntegerParam(ArchonClockStm1, clkstm1);
+  status |= setIntegerParam(ArchonPocketPump, pocketPump);
   status |= setDoubleParam (ArchonFramePollPeriod, framePollingPeriod);
   status |= setIntegerParam(ArchonTotalTaplines, totalTaplines);
   status |= setIntegerParam(ArchonActiveTaplines, activeTaplines);
@@ -1122,7 +1126,8 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
            (function == ArchonNumBatchFrames) || (function == ArchonLineScanMode) ||
            (function == ArchonPreFrameClear)  || (function == ArchonIdleClear)    ||
            (function == ArchonPreFrameSkip)   || (function == ArchonClockAt)      ||
-           (function == ArchonClockSt)        || (function == ArchonClockStm1)) {
+           (function == ArchonClockSt)        || (function == ArchonClockStm1)    ||
+           (function == ArchonPocketPump)) {
     status = setupAcquisition();
     if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
@@ -2036,6 +2041,7 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
   int clockAt;
   int clockSt;
   int clockStm1;
+  int pocketPump;
   int binX, binY, minX, minY, sizeX, sizeY, reverseX, reverseY, maxSizeX, maxSizeY;
   unsigned sampleMode;
   unsigned frameSize;
@@ -2117,6 +2123,7 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
   getIntegerParam(ArchonClockAt, &clockAt);
   getIntegerParam(ArchonClockSt, &clockSt);
   getIntegerParam(ArchonClockStm1, &clockStm1);
+  getIntegerParam(ArchonPocketPump, &pocketPump);
 
   if (!commit) {
     return asynSuccess;
@@ -2181,6 +2188,10 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
               "%s:%s: set_clock_stm1(%d)\n",
               driverName, functionName, clockStm1);
     checkStatus(mDrv->set_clock_stm1(clockStm1), "unable to set clock stm1 setting");
+    asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+              "%s:%s: set_pocket_pump(%d)\n",
+              driverName, functionName, pocketPump);
+    checkStatus(mDrv->set_pocket_pump(pocketPump), "unagle to set pocket pump count setting");
 
     // Get image configuration info and apply it
     const Pds::Archon::Config& config = mDrv->config();

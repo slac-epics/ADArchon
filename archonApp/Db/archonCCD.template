@@ -283,6 +283,22 @@ record(longin, "$(P)$(R)ArchonClockSTM1_RBV")
     field(SCAN, "I/O Intr")
 }
 
+record(longout, "$(P)$(R)ArchonPocketPump")
+{
+    field(PINI, "1")
+    field(DTYP, "asynInt32")
+    field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_POCKET_PUMP")
+    field(VAL,  "0")
+    info( autosaveFields, "VAL" )
+}
+
+record(longin, "$(P)$(R)ArchonPocketPump_RBV")
+{
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))ARCHON_POCKET_PUMP")
+    field(SCAN, "I/O Intr")
+}
+
 # The bias channel that is the primary one
 record(mbbo, "$(P)$(R)ArchonBiasChan")
 {
