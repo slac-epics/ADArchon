@@ -610,7 +610,7 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
     mClockCt = strtoul(config.constant("CT").c_str(), NULL, 0);
     mDummyPixelCount = strtoul(config.constant("DPIXELS").c_str(), NULL, 0);
     mClearTime = calcClearTime(clkat, clkst, clkstm1, preframeSkip, preframeClear);
-    mReadOutTime = calcReadOutTime(clkat, clkst, clkstm1, sizeY, binX, binY);
+    mReadOutTime = calcReadOutTime(clkat, clkst, clkstm1, sizeY, binX, binY, pocketPump);
 
 
     // Get the current temperature
@@ -1688,14 +1688,16 @@ epicsUInt64 ArchonCCD::calcReadOutTime(epicsUInt64 at,
                                        epicsUInt64 stm1,
                                        epicsUInt64 sizeY,
                                        epicsUInt64 binX,
-                                       epicsUInt64 binY)
+                                       epicsUInt64 binY,
+                                       epicsUInt64 npump)
 {
   static const epicsUInt64 pixelclk = 330;
   epicsUInt64 vshift = 6 * at;
   epicsUInt64 hshift = 5 * st + stm1;
   epicsUInt64 pixel = pixelclk + (binX - 1) * hshift;
   epicsUInt64 line = 2 * st + mClockCt + vshift * binY + pixelclk * (mDummyPixelCount + 1) + mPixelCount/binX * pixel;
-  epicsUInt64 nclocks = line * sizeY;
+  epicsUInt64 pump = 12 * (at + 1) * npump;
+  epicsUInt64 nclocks = line * sizeY + pump;
 
   return nclocks;
 }
@@ -2220,7 +2222,7 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
     mClearTime = calcClearTime(clockAt, clockSt, clockStm1, preframeSkip, preframeClear);
     setDoubleParam(ArchonClearTime, mClearTime * SECS_PER_CLOCK);
     // calculate the image readout time
-    mReadOutTime = calcReadOutTime(clockAt, clockSt, clockStm1, sizeY, binX, binY);
+    mReadOutTime = calcReadOutTime(clockAt, clockSt, clockStm1, sizeY, binX, binY, pocketPump);
     setDoubleParam(ArchonReadOutTime, mReadOutTime * SECS_PER_CLOCK);
 
     // calculate the wait time needed after each frame to get the desired internal trigger acquisition period
