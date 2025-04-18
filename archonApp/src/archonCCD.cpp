@@ -1676,9 +1676,9 @@ epicsUInt64 ArchonCCD::calcClearTime(epicsUInt64 at,
 {
   epicsUInt64 vshift = 6 * at;
   epicsUInt64 hshift = 5 * st + stm1;
-  epicsUInt64 skipline = 2 * st + mClockCt + vshift + mPixelCount * hshift;
+  epicsUInt64 skiplines = 2 * st + mClockCt + skips * vshift + mPixelCount * hshift;
   epicsUInt64 sweep = 2 * st + mClockCt + mLineCount * vshift + mPixelCount * hshift;
-  epicsUInt64 nclocks = skipline * skips + sweep * sweeps;
+  epicsUInt64 nclocks = skiplines + sweep * sweeps;
 
   return nclocks;
 }
