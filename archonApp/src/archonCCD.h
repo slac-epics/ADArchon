@@ -257,7 +257,8 @@ class ArchonCCD : public ADDriver {
                                 epicsUInt64 stm1,
                                 epicsUInt64 sizey,
                                 epicsUInt64 binx,
-                                epicsUInt64 biny);
+                                epicsUInt64 biny,
+                                epicsUInt64 npump);
     bool waitFrame(void *frameBuffer, Pds::Archon::FrameMetaData *frameMeta);
     bool saveDataFrame(int frameNumber, bool append=false);
 
