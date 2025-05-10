@@ -6,7 +6,7 @@ release 1
 x 677
 y 54
 w 1070
-h 950
+h 975
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-bold-r-10.0"
 btnFont "helvetica-medium-r-18.0"
@@ -23,6 +23,21 @@ showGrid
 snapToGrid
 gridSize 4
 endScreenProperties
+
+# (Rectangle)
+object activeRectangleClass
+beginObjectProperties
+major 4
+minor 0
+release 0
+x 5
+y 380
+w 350
+h 578
+lineColor index 14
+fillColor index 14
+lineWidth 0
+endObjectProperties
 
 # (Rectangle)
 object activeRectangleClass
@@ -1943,7 +1958,7 @@ major 4
 minor 0
 release 0
 x 148
-y 858
+y 882
 w 80
 h 20
 fgColor index 14
@@ -1994,21 +2009,6 @@ h 20
 lineColor index 2
 fill
 fillColor index 2
-lineWidth 0
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 5
-y 380
-w 350
-h 554
-lineColor index 14
-fillColor index 14
 lineWidth 0
 endObjectProperties
 
@@ -2680,7 +2680,7 @@ major 4
 minor 1
 release 1
 x 17
-y 858
+y 882
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -2700,7 +2700,7 @@ major 4
 minor 1
 release 1
 x 17
-y 882
+y 906
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -2720,7 +2720,7 @@ major 4
 minor 1
 release 1
 x 17
-y 906
+y 930
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -2740,7 +2740,7 @@ major 4
 minor 7
 release 0
 x 240
-y 858
+y 882
 w 80
 h 20
 controlPv "$(P)$(R)DataType_RBV"
@@ -2946,7 +2946,7 @@ major 4
 minor 7
 release 0
 x 240
-y 762
+y 786
 w 80
 h 20
 controlPv "$(P)$(R)ArchonClockAT_RBV"
@@ -2970,7 +2970,7 @@ major 4
 minor 1
 release 1
 x 17
-y 762
+y 786
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -2990,7 +2990,7 @@ major 4
 minor 7
 release 0
 x 148
-y 762
+y 786
 w 80
 h 20
 controlPv "$(P)$(R)ArchonClockAT"
@@ -3015,7 +3015,7 @@ major 4
 minor 7
 release 0
 x 240
-y 786
+y 810
 w 80
 h 20
 controlPv "$(P)$(R)ArchonClockST_RBV"
@@ -3039,7 +3039,7 @@ major 4
 minor 1
 release 1
 x 17
-y 786
+y 810
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -3059,7 +3059,7 @@ major 4
 minor 7
 release 0
 x 148
-y 786
+y 810
 w 80
 h 20
 controlPv "$(P)$(R)ArchonClockST"
@@ -3084,7 +3084,7 @@ major 4
 minor 7
 release 0
 x 240
-y 810
+y 834
 w 80
 h 20
 controlPv "$(P)$(R)ArchonClockSTM1_RBV"
@@ -3108,7 +3108,7 @@ major 4
 minor 7
 release 0
 x 240
-y 882
+y 906
 w 80
 h 20
 controlPv "$(P)$(R)ArchonClearTime_RBV"
@@ -3133,7 +3133,7 @@ major 4
 minor 7
 release 0
 x 240
-y 906
+y 930
 w 80
 h 20
 controlPv "$(P)$(R)ArchonReadOutTime_RBV"
@@ -3158,7 +3158,7 @@ major 4
 minor 1
 release 1
 x 17
-y 810
+y 834
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -3178,7 +3178,7 @@ major 4
 minor 7
 release 0
 x 148
-y 810
+y 834
 w 80
 h 20
 controlPv "$(P)$(R)ArchonClockSTM1"
@@ -6371,7 +6371,7 @@ major 4
 minor 1
 release 1
 x 17
-y 834
+y 858
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -6391,7 +6391,7 @@ major 4
 minor 7
 release 0
 x 148
-y 834
+y 858
 w 80
 h 20
 controlPv "$(P)$(R)ArchonPocketPump"
@@ -6416,10 +6416,79 @@ major 4
 minor 7
 release 0
 x 240
-y 834
+y 858
 w 80
 h 20
 controlPv "$(P)$(R)ArchonPocketPump_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 17
+y 762
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Overscan"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 148
+y 762
+w 80
+h 20
+controlPv "$(P)$(R)ArchonOverScan"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 240
+y 762
+w 80
+h 20
+controlPv "$(P)$(R)ArchonOverScan_RBV"
 format "decimal"
 font "helvetica-medium-r-14.0"
 fontAlign "center"

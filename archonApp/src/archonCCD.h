@@ -38,6 +38,8 @@
 #define ArchonPreFrameClearString     "ARCHON_PREFRAME_CLEAR"
 #define ArchonIdleClearString         "ARCHON_IDLE_CLEAR"
 #define ArchonPreFrameSkipString      "ARCHON_PREFRAME_SKIP"
+#define ArchonOverScanString          "ARCHON_OVER_SCAN"
+#define ArchonOverScanMaxString       "ARCHON_OVER_SCAN_MAX"
 #define ArchonNonIntTimeString        "ARCHON_NONINT_TIME"
 #define ArchonClockAtString           "ARCHON_CLOCK_AT"
 #define ArchonClockStString           "ARCHON_CLOCK_ST"
@@ -110,7 +112,7 @@ namespace Pds {
 class ArchonCCD : public ADDriver {
   public:
     ArchonCCD(const char *portName, const char *filePath, const char *cameraAddr, int cameraPort,
-              int maxBuffers, size_t maxMemory, int priority, int stackSize);
+              int maxBuffers, size_t maxMemory, int priority, int stackSize, int overScanMax);
     virtual ~ArchonCCD();
 
     /* These are the methods that we override from ADDriver */
@@ -185,6 +187,8 @@ class ArchonCCD : public ADDriver {
     int ArchonPreFrameClear;
     int ArchonIdleClear;
     int ArchonPreFrameSkip;
+    int ArchonOverScan;
+    int ArchonOverScanMax;
     int ArchonNonIntTime;
     int ArchonClockAt;
     int ArchonClockSt;

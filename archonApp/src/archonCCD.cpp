@@ -332,7 +332,7 @@ static void exitHandler(void *drvPvt)
 }
 
 ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cameraAddr, int cameraPort,
-                     int maxBuffers, size_t maxMemory, int priority, int stackSize) :
+                     int maxBuffers, size_t maxMemory, int priority, int stackSize, int overScanMax) :
   ADDriver(portName, 1, 0, maxBuffers, maxMemory,
            asynEnumMask, asynEnumMask,
            ASYN_CANBLOCK, 1, priority, stackSize),
@@ -427,6 +427,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   createParam(ArchonPreFrameClearString,    asynParamInt32,   &ArchonPreFrameClear);
   createParam(ArchonIdleClearString,        asynParamInt32,   &ArchonIdleClear);
   createParam(ArchonPreFrameSkipString,     asynParamInt32,   &ArchonPreFrameSkip);
+  createParam(ArchonOverScanString,         asynParamInt32,   &ArchonOverScan);
+  createParam(ArchonOverScanMaxString,      asynParamInt32,   &ArchonOverScanMax);
   createParam(ArchonNonIntTimeString,       asynParamFloat64, &ArchonNonIntTime);
   createParam(ArchonClockAtString,          asynParamInt32,   &ArchonClockAt);
   createParam(ArchonClockStString,          asynParamInt32,   &ArchonClockSt);
@@ -788,6 +790,8 @@ ArchonCCD::ArchonCCD(const char *portName, const char *filePath, const char *cam
   status |= setIntegerParam(ArchonPreFrameClear, preframeClear);
   status |= setIntegerParam(ArchonIdleClear, idleClear);
   status |= setIntegerParam(ArchonPreFrameSkip, preframeSkip);
+  status |= setIntegerParam(ArchonOverScan, 0);
+  status |= setIntegerParam(ArchonOverScanMax, overScanMax);
   status |= setIntegerParam(ArchonClockAt, clkat);
   status |= setIntegerParam(ArchonClockSt, clkst);
   status |= setIntegerParam(ArchonClockStm1, clkstm1);
@@ -1125,9 +1129,9 @@ asynStatus ArchonCCD::writeInt32(asynUser *pasynUser, epicsInt32 value)
            (function == ADTriggerMode)        || (function == ArchonReadOutMode)  ||
            (function == ArchonNumBatchFrames) || (function == ArchonLineScanMode) ||
            (function == ArchonPreFrameClear)  || (function == ArchonIdleClear)    ||
-           (function == ArchonPreFrameSkip)   || (function == ArchonClockAt)      ||
-           (function == ArchonClockSt)        || (function == ArchonClockStm1)    ||
-           (function == ArchonPocketPump)) {
+           (function == ArchonPreFrameSkip)   || (function == ArchonOverScan)     ||
+           (function == ArchonClockAt)        || (function == ArchonClockSt)      ||
+           (function == ArchonClockStm1)      || (function == ArchonPocketPump)) {
     status = setupAcquisition();
     if (status != asynSuccess) setIntegerParam(function, oldValue);
   }
@@ -2045,6 +2049,7 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
   int clockStm1;
   int pocketPump;
   int binX, binY, minX, minY, sizeX, sizeY, reverseX, reverseY, maxSizeX, maxSizeY;
+  int overScan, overScanMax;
   unsigned sampleMode;
   unsigned frameSize;
   unsigned bitsPerPixel;
@@ -2087,9 +2092,20 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
   getIntegerParam(ADReverseY, &reverseY);
   getIntegerParam(ADMaxSizeX, &maxSizeX);
   getIntegerParam(ADMaxSizeY, &maxSizeY);
+  getIntegerParam(ArchonOverScan, &overScan);
+  getIntegerParam(ArchonOverScanMax, &overScanMax);
+  if (overScan < 0) {
+    overScan = 0;
+    setIntegerParam(ArchonOverScan, overScan);
+  }
+  if (overScan > overScanMax) {
+    overScan = overScanMax;
+    setIntegerParam(ArchonOverScan, overScan);
+  }
   if (readOutMode == ARFullVerticalBinning) {
     // Set maximum binning but do not update parameter, this preserves ADBinY
     // when going back to Image readout mode.
+    overScan = 0;
     minY = 0;
     sizeY = maxSizeY;
     binY = maxSizeY;
@@ -2110,6 +2126,8 @@ asynStatus ArchonCCD::setupAcquisition(bool commit)
     sizeY = maxSizeY - minY;
     setIntegerParam(ADSizeY, sizeY);
   }
+  // add extra overscan lines to the total sizeY
+  sizeY += overScan;
 
   getIntegerParam(ADTriggerMode, &triggerMode);
 
@@ -2730,15 +2748,16 @@ bool ArchonCCD::saveDataFrame(int frameNumber, bool append)
   * \param[in] maxMemory The maximum amount of memory that the NDArrayPool for this driver is
   *            allowed to allocate. Set this to -1 to allow an unlimited amount of memory.
   *            files on Windows, but must be a valid path on Linux.
-  * \param[in] priority The thread priority for the asyn port driver thread
-  * \param[in] stackSize The stack size for the asyn port driver thread
+  * \param[in] priority The thread priority for the asyn port driver thread.
+  * \param[in] stackSize The stack size for the asyn port driver thread.
+  * \param[in] overScanMax The maximum number of overscan lines.
   */
 extern "C" {
 int archonCCDConfig(const char *portName, const char *filePath, const char *cameraAddr, int cameraPort,
-                    int maxBuffers, size_t maxMemory, int priority, int stackSize)
+                    int maxBuffers, size_t maxMemory, int priority, int stackSize, int overScanMax)
 {
   /*Instantiate class.*/
-  new ArchonCCD(portName, filePath, cameraAddr, cameraPort, maxBuffers, maxMemory, priority, stackSize);
+  new ArchonCCD(portName, filePath, cameraAddr, cameraPort, maxBuffers, maxMemory, priority, stackSize, overScanMax);
   return(asynSuccess);
 }
 
@@ -2754,6 +2773,7 @@ static const iocshArg archonCCDConfigArg4 = {"maxBuffers", iocshArgInt};
 static const iocshArg archonCCDConfigArg5 = {"maxMemory", iocshArgInt};
 static const iocshArg archonCCDConfigArg6 = {"priority", iocshArgInt};
 static const iocshArg archonCCDConfigArg7 = {"stackSize", iocshArgInt};
+static const iocshArg archonCCDConfigArg8 = {"overScanMax", iocshArgInt};
 static const iocshArg * const archonCCDConfigArgs[] =  {&archonCCDConfigArg0,
                                                        &archonCCDConfigArg1,
                                                        &archonCCDConfigArg2,
@@ -2761,13 +2781,15 @@ static const iocshArg * const archonCCDConfigArgs[] =  {&archonCCDConfigArg0,
                                                        &archonCCDConfigArg4,
                                                        &archonCCDConfigArg5,
                                                        &archonCCDConfigArg6,
-                                                       &archonCCDConfigArg7};
+                                                       &archonCCDConfigArg7,
+                                                       &archonCCDConfigArg8};
 
-static const iocshFuncDef configArchonCCD = {"archonCCDConfig", 8, archonCCDConfigArgs};
+static const iocshFuncDef configArchonCCD = {"archonCCDConfig", 9, archonCCDConfigArgs};
 static void configArchonCCDCallFunc(const iocshArgBuf *args)
 {
     archonCCDConfig(args[0].sval, args[1].sval, args[2].sval, args[3].ival,
-                   args[4].ival, args[5].ival, args[6].ival, args[7].ival);
+                    args[4].ival, args[5].ival, args[6].ival, args[7].ival,
+                    args[8].ival);
 }
 
 static void archonCCDRegister(void)
