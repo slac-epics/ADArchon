@@ -33,7 +33,7 @@ major 4
 minor 0
 release 0
 x 0
-y 244
+y 268
 w 176
 h 24
 
@@ -46,7 +46,7 @@ major 4
 minor 4
 release 0
 x 0
-y 244
+y 268
 w 176
 h 24
 fgColor index 14
@@ -82,7 +82,7 @@ major 4
 minor 7
 release 0
 x 22
-y 248
+y 272
 w 152
 h 16
 controlPv "$(P)$(R)CamModel"
@@ -172,7 +172,7 @@ major 4
 minor 7
 release 0
 x 144
-y 160
+y 184
 w 88
 h 20
 controlPv "$(P)$(R)ArchonClockAT"
@@ -197,7 +197,7 @@ major 4
 minor 7
 release 0
 x 248
-y 184
+y 208
 w 92
 h 20
 controlPv "$(P)$(R)ArchonClockST_RBV"
@@ -221,7 +221,7 @@ major 4
 minor 7
 release 0
 x 248
-y 208
+y 232
 w 92
 h 20
 controlPv "$(P)$(R)ArchonClockSTM1_RBV"
@@ -245,7 +245,7 @@ major 4
 minor 1
 release 1
 x 12
-y 184
+y 208
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -265,7 +265,7 @@ major 4
 minor 1
 release 1
 x 12
-y 208
+y 232
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -417,7 +417,7 @@ major 4
 minor 7
 release 0
 x 248
-y 160
+y 184
 w 92
 h 20
 controlPv "$(P)$(R)ArchonClockAT_RBV"
@@ -441,7 +441,7 @@ major 4
 minor 1
 release 1
 x 12
-y 160
+y 184
 w 120
 h 20
 font "helvetica-medium-r-14.0"
@@ -486,7 +486,7 @@ major 4
 minor 7
 release 0
 x 144
-y 184
+y 208
 w 88
 h 20
 controlPv "$(P)$(R)ArchonClockST"
@@ -511,7 +511,7 @@ major 4
 minor 7
 release 0
 x 144
-y 208
+y 232
 w 88
 h 20
 controlPv "$(P)$(R)ArchonClockSTM1"
@@ -671,5 +671,74 @@ useDisplayBg
 value {
   "POWER_PV: "
 }
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 12
+y 160
+w 120
+h 20
+font "helvetica-medium-r-14.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Overscan"
+}
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 144
+y 160
+w 88
+h 20
+controlPv "$(P)$(R)ArchonOverScan"
+format "decimal"
+font "helvetica-medium-r-12.0"
+fgColor index 25
+bgColor index 5
+editable
+motifWidget
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 248
+y 160
+w 92
+h 20
+controlPv "$(P)$(R)ArchonOverScan_RBV"
+format "decimal"
+font "helvetica-medium-r-14.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 40
+smartRefresh
+fastUpdate
+newPos
+objType "controls"
 endObjectProperties
 
