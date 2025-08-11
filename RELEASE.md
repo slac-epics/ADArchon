@@ -12,6 +12,10 @@ files respectively, in the configure/ directory of the appropriate release of th
 
 Release Notes
 =============
+R1.0.7 2025-08-11 Jane Liu
+------------------
+* Updated modules to latest releases
+
 R1.0.0 (29-May-2024)
 ------------------
 * Support for full frame and full vertical binning modes.
