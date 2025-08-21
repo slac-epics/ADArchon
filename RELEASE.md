@@ -12,6 +12,10 @@ files respectively, in the configure/ directory of the appropriate release of th
 
 Release Notes
 =============
+R1.0.8 2025-08-21 Bruce Hill
+------------------
+* Add support for rhel9-x86_64
+
 R1.0.7 2025-08-11 Jane Liu
 ------------------
 * Updated modules to latest releases
